@@ -1,1835 +1,1717 @@
+
 <!DOCTYPE html>
 <html lang="en">
-
-  <head>
-    <meta charset="UTF-8">
-    <title>Fusion Chess</title>
-    
-
-  </head>
-    
-  <body>
-  <!DOCTYPE html>
-<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fusion Chess - Piece Combining Variant</title>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 20px;
-        }
-        
-        h1 {
-            color: #333;
-            margin-bottom: 10px;
-        }
-        
-        .game-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-top: 20px;
-        }
-        
-        .game-info {
-            display: flex;
-            justify-content: space-between;
-            width: 480px;
-            margin-bottom: 15px;
-        }
-        
-        .turn-indicator {
-            font-size: 18px;
-            font-weight: bold;
-            padding: 8px 15px;
-            border-radius: 5px;
-            background-color: #fff;
-        }
-        
-        .board {
-            display: grid;
-            grid-template-columns: repeat(8, 60px);
-            grid-template-rows: repeat(8, 60px);
-            border: 5px solid #333;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-        }
-        
-        .square {
-            width: 60px;
-            height: 60px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            cursor: pointer;
-        }
-        
-        .white {
-            background-color: #f0d9b5;
-        }
-        
-        .black {
-            background-color: #b58863;
-        }
-        
-        .piece {
-            width: 50px;
-            height: 50px;
-            position: relative;
-            z-index: 10;
-            cursor: grab;
-            user-select: none;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 40px;
-        }
-        
-        .piece.dragging {
-            cursor: grabbing;
-            opacity: 0.8;
-        }
-        
-        .possible-move {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background-color: rgba(0, 128, 0, 0.5);
-            z-index: 5;
-        }
-        
-        .possible-capture {
-            position: absolute;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            border: 4px solid rgba(255, 0, 0, 0.6);
-            box-sizing: border-box;
-            z-index: 5;
-        }
-        
-        .square.highlighted {
-            background-color: rgba(255, 255, 0, 0.5);
-        }
-        
-        .square.check {
-            background-color: rgba(255, 0, 0, 0.3);
-        }
-        
-        .combined-indicator {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            background-color: #e74c3c;
-            border: 2px solid white;
-            z-index: 20;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 14px;
-            color: white;
-        }
-        
-        .secondary-piece {
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            width: 24px;
-            height: 24px;
-            z-index: 15;
-            opacity: 0.9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 20px;
-        }
-        
-        .controls {
-            margin-top: 20px;
-            display: flex;
-            gap: 10px;
-        }
-        
-        button {
-            padding: 8px 15px;
-            background-color: #4a69bd;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.2s;
-        }
-        
-        button:hover {
-            background-color: #1e3799;
-        }
-        
-        .game-message {
-            margin-top: 15px;
-            padding: 10px 20px;
-            border-radius: 5px;
-            font-weight: bold;
-            font-size: 18px;
-            display: none;
-        }
-        
-        .game-message.checkmate {
-            background-color: #e74c3c;
-            color: white;
-            display: block;
-        }
-        
-        .game-message.stalemate {
-            background-color: #7f8c8d;
-            color: white;
-            display: block;
-        }
-        
-        .game-message.check {
-            background-color: #f39c12;
-            color: white;
-            display: block;
-        }
-        
-        .help-panel {
-            max-width: 480px;
-            background-color: white;
-            border-radius: 5px;
-            padding: 15px;
-            margin-top: 20px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        
-        .help-title {
-            font-weight: bold;
-            margin-bottom: 10px;
-            font-size: 18px;
-        }
-        
-        .captured-pieces {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin: 10px 0;
-            min-height: 30px;
-            gap: 5px;
-        }
-        
-        .captured-piece {
-            font-size: 24px;
-            margin: 0 2px;
-        }
-        
-        #promotionModal {
-            display: none;
-            position: fixed;
-            z-index: 100;
-            background: rgba(0,0,0,0.5);
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        #promotionModal .inner {
-            background: white;
-            padding: 20px;
-            border-radius: 5px;
-            text-align: center;
-        }
-        
-        #promotionModal button {
-            margin: 5px;
-        }
-        
-        @media (max-width: 520px) {
-            .board {
-                grid-template-columns: repeat(8, 40px);
-                grid-template-rows: repeat(8, 40px);
-                border-width: 3px;
-            }
-            
-            .square {
-                width: 40px;
-                height: 40px;
-            }
-            
-            .piece {
-                width: 35px;
-                height: 35px;
-                font-size: 32px;
-            }
-            
-            .secondary-piece {
-                width: 16px;
-                height: 16px;
-                font-size: 14px;
-                top: 1px;
-                right: 1px;
-            }
-            
-            .combined-indicator {
-                width: 16px;
-                height: 16px;
-                font-size: 10px;
-                top: -3px;
-                right: -3px;
-            }
-            
-            .game-info {
-                width: 320px;
-            }
-            
-            .help-panel {
-                max-width: 320px;
-                font-size: 14px;
-            }
-            
-            .possible-capture {
-                width: 35px;
-                height: 35px;
-            }
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      background: #fff;
+      color: #111;
+    }
+
+/* ================= Snow Layer ================= */
+#snowfall{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:9999;
+  overflow:hidden;
+}
+
+.snowflake{
+  position:absolute;
+  top:-10px;
+  background:#fff;
+  border-radius:50%;
+  opacity:0.8;
+  filter:blur(0.6px);
+  animation-name:snow-fall;
+  animation-timing-function:linear;
+  animation-iteration-count:infinite;
+}
+
+/* Vertical fall + slight right drift (matches screenshot feel) */
+@keyframes snow-fall{
+  0%{
+    transform:translate(0, 0);
+  }
+  100%{
+    transform:translate(40px, 110vh);
+  }
+}
+
+
+    /* Top Category Bar */
+    .category-bar {
+      display: flex;
+      overflow-x: auto;
+      padding: 10px;
+      background: #fff;
+      border-bottom: 1px solid #eee;
+    }
+
+    .category {
+      flex: 0 0 auto;
+      width: 100px;
+      text-align: center;
+      margin-right: 10px;
+    }
+
+    .category img {
+      width: 74px;
+      height: 74px;
+      object-fit: contain;
+    }
+
+    .category p {
+      font-size: 10px;
+      margin-top: 4px;
+       font-weight: 700;
+  color: #222;
+  letter-spacing: 0.2px;
+  text-transform: none;
+  font-family: 'Poppins', sans-serif;
+    }
+    
+    .header-nav-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: #fff;
+      border-bottom: 1px solid #ddd;
+      text-align: center;
+      z-index: 1000;
+    }
+
+    .header-nav-bar img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    
+
+    /* Hero Slider */
+    .slider {
+      position: relative;
+      overflow: hidden;
+      border-radius: 12px;
+      margin: 10px;
+    }
+
+    .slides {
+      display: flex;
+      transition: transform 0.5s ease-in-out;
+    }
+
+    .slide {
+      min-width: 100%;
+      height: 250px;
+      background-size: cover;
+      background-position: center;
+      border-radius: 12px;
+    }
+
+    .slider-btns {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 5px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      background: #ccc;
+      border-radius: 50%;
+    }
+
+    .dot.active {
+      background: #000;
+    }
+
+    /* Offer Info Bar */
+    .offer-bar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #ffcc00;
+      color: #111;
+      font-size: 12px;
+      padding: 8px;
+      text-align: center;
+    }
+
+    /* Features Row */
+    .features {
+      display: flex;
+      justify-content: space-around;
+      background: #f9f9f9;
+      padding: 10px 0;
+    }
+
+    .feature {
+      text-align: center;
+      font-size: 12px;
+    }
+
+    .feature img {
+      width: 30px;
+      height: 30px;
+      margin-bottom: 5px;
+    }
+
+    /* Bottom Nav */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #fff;
+      border-top: 1px solid #ddd;
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0;
+      z-index: 100;
+    }
+
+    .bottom-nav .nav-item {
+      text-align: center;
+      font-size: 12px;
+    }
+
+    .bottom-nav img {
+      width: 24px;
+      height: 24px;
+      margin-bottom: 4px;
+    }
+
+    /* Scrollbar Hidden for top categories */
+    .category-bar::-webkit-scrollbar {
+      display: none;
+    }
+    
+    /* Product Grid */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .product-card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      transition: transform 0.2s ease;
+    }
+
+    .product-card:hover {
+      transform: translateY(-3px);
+    }
+
+    .product-card img {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+    }
+
+    .tag-bar {
+      background: #ffd700;
+      padding: 4px 6px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+.section {
+  width: 100%;
+  padding: 40px 0;
+  overflow: hidden;
+}
+
+.section h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 20px 20px;
+}
+
+.section h2 span {
+  color: #000;
+  position: relative;
+}
+
+.section h2 span::after {
+  content: "";
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: #e71d36;
+}
+
+/* ==========================
+   HORIZONTAL SCROLL CONTAINER
+=========================== */
+.carousel {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 0 20px;
+}
+
+.carousel::-webkit-scrollbar {
+  display: none;
+}
+
+
+/* ---------- Horizontal story sections (round icons) ---------- */
+.stories{
+  padding:8px 10px 6px;display:flex;gap:12px;overflow:auto;scrollbar-width:none;-ms-overflow-style:none
+}
+.stories::-webkit-scrollbar{display:none}
+.story{flex:0 0 auto;text-align:center;width:78px}
+.story .ring{width:52px;height:52px;border-radius:50%;padding:4px;background:linear-gradient(180deg,#fff,#fff);display:inline-flex;align-items:center;justify-content:center;border:3px solid #ff3b30}
+.story img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
+.story p{font-size:12px;margin-top:6px;color:#111;font-weight:600}
+
+/* ---------- Section title ---------- */
+.section{
+  padding:14px 14px 6px;display:flex;align-items:center;justify-content:space-between
+}
+.section h2{font-size:24px;margin:0;font-weight:800}
+.section .viewall{color:#2b6fb6;font-size:14px;text-decoration:none}
+
+
+/* ========================
+   CARD STYLES
+   ======================== */
+.card {
+  min-width: 240px;
+  max-width: 240px;
+  height: 260px;
+  background-color: #f7f7f7;
+  border-radius: 16px;
+  overflow: hidden;
+  flex-shrink: 0;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.card video,
+.card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.card-content {
+  padding: 10px 14px;
+  text-align: center;
+}
+
+.card-content h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111;
+}
+
+.sub-section {
+  padding: 40px 0;
+}
+
+.sub-header {
+  display: flex; 
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 20px 20px;
+}
+
+.sub-header h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.sub-header h2 span {
+  position: relative;
+}
+
+.sub-header h2 span::after {
+  content: "";
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: #e71d36;
+}
+
+.sub-header a {
+  text-decoration: none;
+  color: #007bff;
+  font-weight: 700;
+}
+
+
+.sub-header a {
+  text-decoration: none;
+  color: #007bff;
+  font-weight: 500;
+}
+
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin: 0 20px 30px;
+}
+
+.tab {
+  background-color: #f0f0f0;
+  border-radius: 20px;
+  padding: 8px 20px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background-color 0.3s;
+}
+
+.tab.active {
+  background-color: #000;
+  color: #fff;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .card {
+    min-width: 180px;
+    height: 220px;
+  }
+
+  .card video,
+  .card img {
+    height: 160px;
+  }
+
+  .section h2, .sub-header h2 {
+    font-size: 1.5rem;
+  }
+}
+
+
+    .product-info {
+      padding: 6px 8px;
+    }
+
+    .product-info h3 {
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      line-height: 1.2;
+    }
+
+    .price {
+      font-weight: 700;
+      font-size: 0.7rem;
+    }
+
+    .price span {
+      text-decoration: line-through;
+      color: #777;
+      font-size: 0.6rem;
+      margin-left: 4px;
+    }
+
+    .offer {
+      color: green;
+      font-weight: 600;
+      font-size: 0.65rem;
+      margin-top: 2px;
+    }
+
+    .color-options {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 3px;
+    }
+
+    .color-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .color-dot.blue { background: #1c4b82; }
+    .color-dot.black { background: #000; }
+    .color-dot.gray { background: #555; }
+    .color-dot.pink { background: #f48fb1; }
+
+    .color-more {
+      font-size: 0.6rem;
+      color: #333;
+    }
+
     </style>
 </head>
 <body>
-    <h1>Fusion Chess</h1>
-    <div class="game-container">
-        <div class="game-info">
-            <div class="turn-indicator">Turn: White</div>
-            <div class="game-message"></div>
-        </div>
-        <div class="captured-pieces" id="blackCaptured"></div>
-        <div class="board" id="board"></div>
-        <div class="captured-pieces" id="whiteCaptured"></div>
-        <div class="controls">
-            <button id="resetBtn">New Game</button>
-            <button id="undoBtn">Undo Move</button>
-            <button id="toggleHelpBtn">Rules</button>
-        </div>
-        <div class="help-panel" id="helpPanel" style="display: none;">
-            <div class="help-title">Fusion Chess Rules:</div>
-            <ol>
-                <li>Standard chess rules apply (checkmate, stalemate, castling, en passant, pawn promotion, threefold repetition).</li>
-                <li><b>Special Rule - Piece Combining:</b> When a non-king, non-pawn piece captures an enemy non-king, non-pawn piece, they combine into one piece.</li>
-                <li><b>Combining Restrictions:</b>
-                    <ul>
-                        <li>Kings and pawns <b>never</b> combine.</li>
-                        <li>Same-type pieces cannot combine (e.g., Rook captures Rook = normal capture, no combining).</li>
-                        <li>Only two pieces can be combined at a time (no triple combinations).</li>
-                        <li>Pieces only combine with opponent pieces, never your own.</li>
-                    </ul>
-                </li>
-                <li><b>Combined Piece Movement:</b> A combined piece can move like either of its two component pieces.</li>
-                <li><b>When a Combined Piece Captures:</b>
-                    <ul>
-                        <li><b>Captures a non-combined piece:</b> If the captured piece type matches the primary OR secondary type of the combined piece, it's a normal capture (no recombining). Otherwise, the secondary piece is replaced with the captured piece type.</li>
-                        <li><b>Example:</b> Rook+Bishop captures Knight → becomes Rook+Knight (Bishop replaced).</li>
-                        <li><b>Example:</b> Rook+Bishop captures Rook → stays Rook+Bishop (normal capture, no change).</li>
-                        <li><b>Captures a combined piece:</b> Normal capture, the attacker remains unchanged.</li>
-                    </ul>
-                </li>
-                <li><b>When a Non-Combined Piece Captures a Combined Piece:</b>
-                    <ul>
-                        <li>The attacker becomes the new <b>primary</b> piece.</li>
-                        <li>The target's <b>primary</b> piece becomes the new <b>secondary</b> piece.</li>
-                        <li>The target's <b>secondary</b> piece is discarded (captured).</li>
-                        <li><b>Example:</b> Knight captures Bishop+Rook → becomes Knight+Bishop (Rook is discarded).</li>
-                    </ul>
-                </li>
-                <li><b>Special Cases:</b>
-                    <ul>
-                        <li>Pawn promotion takes precedence when a pawn reaches the opposite rank.</li>
-                        <li>En passant captures work normally but do not result in combining (pawns don't combine).</li>
-                        <li>Promoted pieces (e.g., promoted Queens) can combine normally after promotion.</li>
-                    </ul>
-                </li>
-            </ol>
-            <div><b>Visual Indicators:</b> Combined pieces show a small secondary piece icon in the top-right corner and a red "+" badge.</div>
-        </div>
-    </div>
-    <div id="promotionModal">
-        <div class="inner">
-            <h3>Promote pawn to:</h3>
-            <button class="promote-btn" data-type="queen"></button>
-            <button class="promote-btn" data-type="rook"></button>
-            <button class="promote-btn" data-type="bishop"></button>
-            <button class="promote-btn" data-type="knight"></button>
-        </div>
-    </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // DOM Elements
-            const boardElement = document.getElementById('board');
-            const turnIndicator = document.querySelector('.turn-indicator');
-            const gameMessage = document.querySelector('.game-message');
-            const resetBtn = document.getElementById('resetBtn');
-            const undoBtn = document.getElementById('undoBtn');
-            const toggleHelpBtn = document.getElementById('toggleHelpBtn');
-            const helpPanel = document.getElementById('helpPanel');
-            const whiteCapturedElement = document.getElementById('whiteCaptured');
-            const blackCapturedElement = document.getElementById('blackCaptured');
-            const promotionModal = document.getElementById('promotionModal');
-            
-            // Game state
-            const GameState = {
-                selectedPiece: null,
-                currentTurn: 'white',
-                gameOver: false,
-                draggedPiece: null,
-                dragStartSquare: null,
-                moveHistory: [],
-                capturedPieces: {
-                    white: [],
-                    black: []
-                },
-                positionCounts: new Map()
-            };
-            
-            // Chess Unicode symbols
-            const PieceSymbols = {
-                'white': {
-                    'pawn': '♙',
-                    'rook': '♖',
-                    'knight': '♘',
-                    'bishop': '♗',
-                    'queen': '♕',
-                    'king': '♔'
-                },
-                'black': {
-                    'pawn': '♟',
-                    'rook': '♜',
-                    'knight': '♞',
-                    'bishop': '♝',
-                    'queen': '♛',
-                    'king': '♚'
-                }
-            };
-            
-            // Initial board setup
-            const initialBoard = [
-                ['black-rook', 'black-knight', 'black-bishop', 'black-queen', 'black-king', 'black-bishop', 'black-knight', 'black-rook'],
-                ['black-pawn', 'black-pawn', 'black-pawn', 'black-pawn', 'black-pawn', 'black-pawn', 'black-pawn', 'black-pawn'],
-                [null, null, null, null, null, null, null, null],
-                [null, null, null, null, null, null, null, null],
-                [null, null, null, null, null, null, null, null],
-                [null, null, null, null, null, null, null, null],
-                ['white-pawn', 'white-pawn', 'white-pawn', 'white-pawn', 'white-pawn', 'white-pawn', 'white-pawn', 'white-pawn'],
-                ['white-rook', 'white-knight', 'white-bishop', 'white-queen', 'white-king', 'white-bishop', 'white-knight', 'white-rook']
-            ];
-            
-            // Class to handle chess board and game logic
-            class ChessBoard {
-                constructor() {
-                    this.boardState = JSON.parse(JSON.stringify(initialBoard));
-                    this.specialStates = {
-                        kings: {
-                            white: { row: 7, col: 4, hasMoved: false },
-                            black: { row: 0, col: 4, hasMoved: false }
-                        },
-                        rooks: {
-                            whiteKingside: { hasMoved: false },
-                            whiteQueenside: { hasMoved: false },
-                            blackKingside: { hasMoved: false },
-                            blackQueenside: { hasMoved: false }
-                        },
-                        enPassantTarget: null,
-                        combinedPieces: {}
-                    };
-                }
-                
-                // Get piece at a specific position
-                getPiece(row, col) {
-                    if (row < 0 || row > 7 || col < 0 || col > 7) return null;
-                    return this.boardState[row][col];
-                }
-                
-                // Set piece at a specific position
-                setPiece(row, col, piece) {
-                    if (row < 0 || row > 7 || col < 0 || col > 7) return;
-                    this.boardState[row][col] = piece;
-                }
-                
-                // Parse piece into color and type
-                parsePiece(piece) {
-                    if (!piece) return { color: null, type: null };
-                    const [color, type] = piece.split('-');
-                    return { color, type };
-                }
-                
-                // Check if a piece is a combined piece
-                isCombinedPiece(row, col) {
-                    const squareKey = `${row}-${col}`;
-                    return !!this.specialStates.combinedPieces[squareKey];
-                }
-                
-                // Get the secondary type of a combined piece
-                getSecondaryType(row, col) {
-                    const squareKey = `${row}-${col}`;
-                    return this.specialStates.combinedPieces[squareKey]?.secondaryType || null;
-                }
-                
-                // Check if a move is valid
-                isValidMove(fromRow, fromCol, toRow, toCol) {
-                    // Can't move to the same square
-                    if (fromRow === toRow && fromCol === toCol) {
-                        return false;
-                    }
-                    
-                    const piece = this.getPiece(fromRow, fromCol);
-                    if (!piece) return false;
-                    
-                    const { color, type } = this.parsePiece(piece);
-                    
-                    // Can't move to a square with your own piece
-                    const targetPiece = this.getPiece(toRow, toCol);
-                    if (targetPiece) {
-                        const { color: targetColor } = this.parsePiece(targetPiece);
-                        if (targetColor === color) {
-                            return false;
-                        }
-                    }
-                    
-                    // Check if this is a combined piece
-                    const squareKey = `${fromRow}-${fromCol}`;
-                    const secondaryType = this.getSecondaryType(fromRow, fromCol);
-                    
-                    // First check if the move is valid for the primary piece type
-                    let validForPrimaryType = this.isValidMoveForPieceType(type, color, fromRow, fromCol, toRow, toCol);
-                    
-                    // If combined, also check if valid for the secondary piece type
-                    let validForSecondaryType = false;
-                    if (secondaryType) {
-                        validForSecondaryType = this.isValidMoveForPieceType(
-                            secondaryType, 
-                            color, 
-                            fromRow, 
-                            fromCol, 
-                            toRow, 
-                            toCol
-                        );
-                    }
-                    
-                    // A combined piece can move like either of its components
-                    const validMove = validForPrimaryType || (secondaryType && validForSecondaryType);
-                    
-                    // If the move seems valid, check if it would put/leave the king in check
-                    if (validMove) {
-                        // Make a temporary move and see if it results in check
-                        const tempBoard = new ChessBoard();
-                        tempBoard.boardState = JSON.parse(JSON.stringify(this.boardState));
-                        tempBoard.specialStates = JSON.parse(JSON.stringify(this.specialStates));
-                        
-                        // Simulate the move
-                        tempBoard.setPiece(toRow, toCol, tempBoard.getPiece(fromRow, fromCol));
-                        tempBoard.setPiece(fromRow, fromCol, null);
-                        
-                        // Transfer combined piece data if needed
-                        if (this.isCombinedPiece(fromRow, fromCol)) {
-                            const oldKey = `${fromRow}-${fromCol}`;
-                            const newKey = `${toRow}-${toCol}`;
-                            tempBoard.specialStates.combinedPieces[newKey] = tempBoard.specialStates.combinedPieces[oldKey];
-                            delete tempBoard.specialStates.combinedPieces[oldKey];
-                        }
-                        
-                        // Find the king's position
-                        let kingRow = this.specialStates.kings[color].row;
-                        let kingCol = this.specialStates.kings[color].col;
-                        
-                        // If the king is moving, update its position
-                        if (type === 'king' && fromRow === kingRow && fromCol === kingCol) {
-                            kingRow = toRow;
-                            kingCol = toCol;
-                        }
-                        
-                        // Check if the king would be in check after the move
-                        if (tempBoard.isSquareAttacked(kingRow, kingCol, color === 'white' ? 'black' : 'white')) {
-                            return false;
-                        }
-                    }
-                    
-                    return validMove;
-                }
-                
-                // Check if a move is valid for a specific piece type
-                isValidMoveForPieceType(type, color, fromRow, fromCol, toRow, toCol) {
-                    const dx = toCol - fromCol;
-                    const dy = toRow - fromRow;
-                    
-                    // Get the piece at the destination
-                    const targetPiece = this.getPiece(toRow, toCol);
-                    
-                    switch (type) {
-                        case 'pawn':
-                            // Determine direction based on color
-                            const direction = color === 'white' ? -1 : 1;
-                            
-                            // Normal move (one square forward)
-                            if (dx === 0 && dy === direction && !targetPiece) {
-                                return true;
-                            }
-                            
-                            // Initial two-square move
-                            if (dx === 0 && dy === 2 * direction && 
-                                ((color === 'white' && fromRow === 6) || (color === 'black' && fromRow === 1)) &&
-                                !targetPiece && !this.getPiece(fromRow + direction, fromCol)) {
-                                return true;
-                            }
-                            
-                            // Capture diagonally
-                            if (Math.abs(dx) === 1 && dy === direction && targetPiece) {
-                                return true;
-                            }
-                            
-                            // En passant capture
-                            if (Math.abs(dx) === 1 && dy === direction && !targetPiece && 
-                                this.specialStates.enPassantTarget && 
-                                this.specialStates.enPassantTarget.row === toRow && 
-                                this.specialStates.enPassantTarget.col === toCol) {
-                                return true;
-                            }
-                            
-                            return false;
-                            
-                        case 'rook':
-                            // Rooks move horizontally or vertically
-                            if (fromRow !== toRow && fromCol !== toCol) {
-                                return false;
-                            }
-                            
-                            // Check for pieces in the way
-                            if (fromRow === toRow) {
-                                // Horizontal movement
-                                const step = dx > 0 ? 1 : -1;
-                                for (let c = fromCol + step; c !== toCol; c += step) {
-                                    if (this.getPiece(fromRow, c)) {
-                                        return false;
-                                    }
-                                }
-                            } else {
-                                // Vertical movement
-                                const step = dy > 0 ? 1 : -1;
-                                for (let r = fromRow + step; r !== toRow; r += step) {
-                                    if (this.getPiece(r, fromCol)) {
-                                        return false;
-                                    }
-                                }
-                            }
-                            
-                            return true;
-                            
-                        case 'knight':
-                            // Knights move in an L-shape
-                            return (Math.abs(dx) === 1 && Math.abs(dy) === 2) || 
-                                   (Math.abs(dx) === 2 && Math.abs(dy) === 1);
-                            
-                        case 'bishop':
-                            // Bishops move diagonally
-                            if (Math.abs(dx) !== Math.abs(dy)) {
-                                return false;
-                            }
-                            
-                            // Check for pieces in the way
-                            const rowStep = dy > 0 ? 1 : -1;
-                            const colStep = dx > 0 ? 1 : -1;
-                            let r = fromRow + rowStep;
-                            let c = fromCol + colStep;
-                            
-                            while (r !== toRow && c !== toCol) {
-                                if (this.getPiece(r, c)) {
-                                    return false;
-                                }
-                                r += rowStep;
-                                c += colStep;
-                            }
-                            
-                            return true;
-                            
-                        case 'queen':
-                            // Queens move like rooks or bishops
-                            return this.isValidMoveForPieceType('rook', color, fromRow, fromCol, toRow, toCol) || 
-                                   this.isValidMoveForPieceType('bishop', color, fromRow, fromCol, toRow, toCol);
-                            
-                        case 'king':
-                            // Normal king move (one square in any direction)
-                            if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1) {
-                                return true;
-                            }
-                            
-                            // Castling
-                            if (dy === 0 && Math.abs(dx) === 2) {
-                                // Cannot castle if king has moved
-                                if (color === 'white' && this.specialStates.kings.white.hasMoved) return false;
-                                if (color === 'black' && this.specialStates.kings.black.hasMoved) return false;
-                                
-                                // Cannot castle out of, through, or into check
-                                const enemyColor = color === 'white' ? 'black' : 'white';
-                                if (this.isSquareAttacked(fromRow, fromCol, enemyColor)) return false;
-                                
-                                if (dx > 0) {
-                                    // Kingside castling
-                                    if (color === 'white' && this.specialStates.rooks.whiteKingside.hasMoved) return false;
-                                    if (color === 'black' && this.specialStates.rooks.blackKingside.hasMoved) return false;
-                                    
-                                    // Ensure rook is present at correct position
-                                    const rookPiece = this.getPiece(fromRow, 7);
-                                    if (!rookPiece || this.parsePiece(rookPiece).type !== 'rook' ||
-                                        this.parsePiece(rookPiece).color !== color) {
-                                        return false;
-                                    }
-                                    
-                                    // Check if squares between king and rook are empty
-                                    if (this.getPiece(fromRow, fromCol + 1) || this.getPiece(fromRow, fromCol + 2)) return false;
-                                    
-                                    // Cannot castle through check
-                                    if (this.isSquareAttacked(fromRow, fromCol + 1, enemyColor)) return false;
-                                    
-                                    return true;
-                                } else {
-                                    // Queenside castling
-                                    if (color === 'white' && this.specialStates.rooks.whiteQueenside.hasMoved) return false;
-                                    if (color === 'black' && this.specialStates.rooks.blackQueenside.hasMoved) return false;
-                                    
-                                    // Ensure rook is present at correct position
-                                    const rookPiece = this.getPiece(fromRow, 0);
-                                    if (!rookPiece || this.parsePiece(rookPiece).type !== 'rook' ||
-                                        this.parsePiece(rookPiece).color !== color) {
-                                        return false;
-                                    }
-                                    
-                                    // Check if squares between king and rook are empty
-                                    if (this.getPiece(fromRow, fromCol - 1) || 
-                                        this.getPiece(fromRow, fromCol - 2) || 
-                                        this.getPiece(fromRow, fromCol - 3)) return false;
-                                    
-                                    // Cannot castle through check
-                                    if (this.isSquareAttacked(fromRow, fromCol - 1, enemyColor)) return false;
-                                    
-                                    return true;
-                                }
-                            }
-                            
-                            return false;
-                        
-                        default:
-                            return false;
-                    }
-                }
-                
-                // Check if a square is under attack from a specific color
-                isSquareAttacked(row, col, attackingColor) {
-                    for (let r = 0; r < 8; r++) {
-                        for (let c = 0; c < 8; c++) {
-                            const piece = this.getPiece(r, c);
-                            if (!piece) continue;
-                            
-                            const { color, type } = this.parsePiece(piece);
-                            if (color !== attackingColor) continue;
-                            
-                            // Check if this piece can attack the target square
-                            // We need to handle pawn attacks specially
-                            if (type === 'pawn') {
-                                const direction = color === 'white' ? -1 : 1;
-                                if ((Math.abs(c - col) === 1) && (r + direction === row)) {
-                                    return true;
-                                }
-                            } else {
-                                // For other pieces, we can use the normal movement rules
-                                // but we need to ignore the check validation to avoid infinite recursion
-                                const secondaryType = this.getSecondaryType(r, c);
-                                
-                                let canAttack = this.canPieceTypeAttack(type, color, r, c, row, col);
-                                
-                                // If combined, also check if the secondary type can attack
-                                if (!canAttack && secondaryType) {
-                                    canAttack = this.canPieceTypeAttack(secondaryType, color, r, c, row, col);
-                                }
-                                
-                                if (canAttack) {
-                                    return true;
-                                }
-                            }
-                        }
-                    }
-                    
-                    return false;
-                }
-                
-                // Check if a piece type can attack a specific square
-                canPieceTypeAttack(type, color, fromRow, fromCol, toRow, toCol) {
-                    const dx = toCol - fromCol;
-                    const dy = toRow - fromRow;
-                    
-                    switch (type) {
-                        case 'pawn':
-                            // Pawns attack diagonally
-                            const direction = color === 'white' ? -1 : 1;
-                            return Math.abs(dx) === 1 && dy === direction;
-                            
-                        case 'rook':
-                            // Rooks attack horizontally or vertically
-                            if (fromRow !== toRow && fromCol !== toCol) {
-                                return false;
-                            }
-                            
-                            // Check for pieces in the way
-                            if (fromRow === toRow) {
-                                // Horizontal movement
-                                const step = dx > 0 ? 1 : -1;
-                                for (let c = fromCol + step; c !== toCol; c += step) {
-                                    if (this.getPiece(fromRow, c)) {
-                                        return false;
-                                    }
-                                }
-                            } else {
-                                // Vertical movement
-                                const step = dy > 0 ? 1 : -1;
-                                for (let r = fromRow + step; r !== toRow; r += step) {
-                                    if (this.getPiece(r, fromCol)) {
-                                        return false;
-                                    }
-                                }
-                            }
-                            
-                            return true;
-                            
-                        case 'knight':
-                            // Knights attack in an L-shape
-                            return (Math.abs(dx) === 1 && Math.abs(dy) === 2) || 
-                                   (Math.abs(dx) === 2 && Math.abs(dy) === 1);
-                            
-                        case 'bishop':
-                            // Bishops attack diagonally
-                            if (Math.abs(dx) !== Math.abs(dy)) {
-                                return false;
-                            }
-                            
-                            // Check for pieces in the way
-                            const rowStep = dy > 0 ? 1 : -1;
-                            const colStep = dx > 0 ? 1 : -1;
-                            let r = fromRow + rowStep;
-                            let c = fromCol + colStep;
-                            
-                            while (r !== toRow && c !== toCol) {
-                                if (this.getPiece(r, c)) {
-                                    return false;
-                                }
-                                r += rowStep;
-                                c += colStep;
-                            }
-                            
-                            return true;
-                            
-                        case 'queen':
-                            // Queens attack like rooks or bishops
-                            return this.canPieceTypeAttack('rook', color, fromRow, fromCol, toRow, toCol) || 
-                                   this.canPieceTypeAttack('bishop', color, fromRow, fromCol, toRow, toCol);
-                            
-                        case 'king':
-                            // Kings attack one square in any direction
-                            return Math.abs(dx) <= 1 && Math.abs(dy) <= 1;
-                            
-                        default:
-                            return false;
-                    }
-                }
-                
-                // Get all valid moves for a piece
-                getValidMoves(row, col) {
-                    const validMoves = [];
-                    
-                    for (let r = 0; r < 8; r++) {
-                        for (let c = 0; c < 8; c++) {
-                            if (this.isValidMove(row, col, r, c)) {
-                                validMoves.push({ row: r, col: c });
-                            }
-                        }
-                    }
-                    
-                    return validMoves;
-                }
-                
-                // Check if a player is in checkmate or stalemate
-                checkGameState(color) {
-                    const kingPos = this.specialStates.kings[color];
-                    const inCheck = this.isSquareAttacked(kingPos.row, kingPos.col, color === 'white' ? 'black' : 'white');
-                    
-                    // Check if any legal moves are available
-                    let hasLegalMoves = false;
-                    
-                    // Look through all pieces of the current player
-                    for (let r = 0; r < 8; r++) {
-                        for (let c = 0; c < 8; c++) {
-                            const piece = this.getPiece(r, c);
-                            if (!piece) continue;
-                            
-                            const { color: pieceColor } = this.parsePiece(piece);
-                            if (pieceColor !== color) continue;
-                            
-                            // Check if this piece has any legal moves
-                            if (this.getValidMoves(r, c).length > 0) {
-                                hasLegalMoves = true;
-                                break;
-                            }
-                        }
-                        if (hasLegalMoves) break;
-                    }
-                    
-                    // Return game state
-                    if (!hasLegalMoves) {
-                        if (inCheck) {
-                            return 'checkmate';
-                        } else {
-                            return 'stalemate';
-                        }
-                    } else if (inCheck) {
-                        return 'check';
-                    } else {
-                        return 'normal';
-                    }
-                }
-                
-                // Move a piece on the board and handle all special cases
-                movePiece(fromRow, fromCol, toRow, toCol) {
-                    // Save move for history
-                    const moveData = {
-                        fromRow,
-                        fromCol,
-                        toRow,
-                        toCol,
-                        piece: this.getPiece(fromRow, fromCol),
-                        capturedPiece: this.getPiece(toRow, toCol),
-                        enPassantTarget: this.specialStates.enPassantTarget,
-                        kings: JSON.parse(JSON.stringify(this.specialStates.kings)),
-                        rooks: JSON.parse(JSON.stringify(this.specialStates.rooks)),
-                        combinedPieces: JSON.parse(JSON.stringify(this.specialStates.combinedPieces))
-                    };
-                    
-                    const piece = this.getPiece(fromRow, fromCol);
-                    if (!piece) return null;
-                    
-                    const { color, type } = this.parsePiece(piece);
-                    
-                    // Get the target piece
-                    const targetPiece = this.getPiece(toRow, toCol);
-                    
-                    // Handle captures
-                    if (targetPiece) {
-                        const { color: targetColor } = this.parsePiece(targetPiece);
-                        moveData.capturedColor = targetColor;
-                    }
-                    
-                    // Determine if target is combined before deleting
-                    let isTargetCombined = false;
-                    if (targetPiece) {
-                        isTargetCombined = this.isCombinedPiece(toRow, toCol);
-                    }
-                    
-                    // Handle en passant capture
-                    let isEnPassantCapture = false;
-                    let capturedKey = null;
-                    if (type === 'pawn' && targetPiece === null && fromCol !== toCol) {
-                        if (this.specialStates.enPassantTarget && 
-                            this.specialStates.enPassantTarget.row === toRow && 
-                            this.specialStates.enPassantTarget.col === toCol) {
-                            // Determine the captured pawn position
-                            const capturedPawnRow = color === 'white' ? toRow + 1 : toRow - 1;
-                            
-                            // Save the captured pawn
-                            moveData.capturedPiece = this.getPiece(capturedPawnRow, toCol);
-                            moveData.capturedColor = color === 'white' ? 'black' : 'white';
-                            moveData.enPassantCapture = {
-                                row: capturedPawnRow,
-                                col: toCol
-                            };
-                            
-                            // Remove the captured pawn
-                            this.setPiece(capturedPawnRow, toCol, null);
-                            
-                            // Delete combined data for captured pawn (though pawns can't be combined)
-                            capturedKey = `${capturedPawnRow}-${toCol}`;
-                            delete this.specialStates.combinedPieces[capturedKey];
-                            
-                            isEnPassantCapture = true;
-                        }
-                    }
-                    
-                    // Handle castling
-                    if (type === 'king' && Math.abs(toCol - fromCol) === 2) {
-                        moveData.castling = true;
-                        
-                        const rookRow = fromRow;
-                        const rookFromCol = toCol > fromCol ? 7 : 0;
-                        const rookToCol = toCol > fromCol ? toCol - 1 : toCol + 1;
-                        
-                        moveData.rookMove = {
-                            fromRow: rookRow,
-                            fromCol: rookFromCol,
-                            toRow: rookRow,
-                            toCol: rookToCol,
-                            piece: this.getPiece(rookRow, rookFromCol)
-                        };
-                        
-                        // Move the rook
-                        this.setPiece(rookRow, rookToCol, this.getPiece(rookRow, rookFromCol));
-                        this.setPiece(rookRow, rookFromCol, null);
-                    }
-                    
-                    // For normal captures, delete combined data from target square
-                    if (targetPiece) {
-                        capturedKey = `${toRow}-${toCol}`;
-                        delete this.specialStates.combinedPieces[capturedKey];
-                    }
-                    
-                    // Handle pawn promotion - set pawn for now, promote later
-                    if (type === 'pawn' && (toRow === 0 || toRow === 7)) {
-                        moveData.promotion = true;
-                        this.setPiece(toRow, toCol, piece); // Temporary
-                    } else {
-                        // For all other pieces
-                        this.setPiece(toRow, toCol, piece);
-                    }
-                    
-                    // Clear the original position
-                    this.setPiece(fromRow, fromCol, null);
-                    
-                    // Update piece combining logic
-                    if (targetPiece && !isEnPassantCapture) {
-                        const { color: targetColor, type: targetType } = this.parsePiece(targetPiece);
-                        
-                        // Check combining rules
-                        if (type !== 'pawn' && type !== 'king' && targetType !== 'pawn' && targetType !== 'king' && type !== targetType) {
-                            const squareKey = `${toRow}-${toCol}`;
-                            
-                            // If the moving piece is already combined
-                            if (this.isCombinedPiece(fromRow, fromCol)) {
-                                const oldSquareKey = `${fromRow}-${fromCol}`;
-                                const primaryType = this.specialStates.combinedPieces[oldSquareKey].primaryType;
-                                
-                                // If capturing a non-combined piece, update secondary type
-                                if (!isTargetCombined) {
-                                    this.specialStates.combinedPieces[squareKey] = {
-                                        primaryType: primaryType,
-                                        secondaryType: targetType
-                                    };
-                                    
-                                    moveData.combined = {
-                                        row: toRow,
-                                        col: toCol,
-                                        primaryType: primaryType,
-                                        secondaryType: targetType
-                                    };
-                                }
-                                // If capturing a combined piece, do not combine further
-                            } else {
-                                // Create a new combined piece if not already combined
-                                this.specialStates.combinedPieces[squareKey] = {
-                                    primaryType: type,
-                                    secondaryType: targetType
-                                };
-                                
-                                moveData.combined = {
-                                    row: toRow,
-                                    col: toCol,
-                                    primaryType: type,
-                                    secondaryType: targetType
-                                };
-                            }
-                        }
-                    }
-                    
-                    // Transfer combined piece data if it was already combined and no new combination occurred
-                    const oldSquareKey = `${fromRow}-${fromCol}`;
-                    const newSquareKey = `${toRow}-${toCol}`;
-                    
-                    if (this.specialStates.combinedPieces[oldSquareKey] && !this.specialStates.combinedPieces[newSquareKey]) {
-                        this.specialStates.combinedPieces[newSquareKey] = 
-                            this.specialStates.combinedPieces[oldSquareKey];
-                    }
-                    
-                    // Delete old combined piece data
-                    if (this.specialStates.combinedPieces[oldSquareKey]) {
-                        delete this.specialStates.combinedPieces[oldSquareKey];
-                    }
-                    
-                    // Update special states
-                    
-                    // Reset en passant target
-                    this.specialStates.enPassantTarget = null;
-                    
-                    // Set en passant target if a pawn moved two squares
-                    if (type === 'pawn' && Math.abs(fromRow - toRow) === 2) {
-                        this.specialStates.enPassantTarget = {
-                            row: (fromRow + toRow) / 2,
-                            col: fromCol
-                        };
-                        
-                        moveData.newEnPassantTarget = {
-                            row: (fromRow + toRow) / 2,
-                            col: fromCol
-                        };
-                    }
-                    
-                    // Update king position
-                    if (type === 'king') {
-                        if (color === 'white') {
-                            this.specialStates.kings.white = { row: toRow, col: toCol, hasMoved: true };
-                        } else {
-                            this.specialStates.kings.black = { row: toRow, col: toCol, hasMoved: true };
-                        }
-                    }
-                    
-                    // Update rook movement for castling
-                    if (type === 'rook') {
-                        if (color === 'white') {
-                            if (fromCol === 0) this.specialStates.rooks.whiteQueenside.hasMoved = true;
-                            if (fromCol === 7) this.specialStates.rooks.whiteKingside.hasMoved = true;
-                        } else {
-                            if (fromCol === 0) this.specialStates.rooks.blackQueenside.hasMoved = true;
-                            if (fromCol === 7) this.specialStates.rooks.blackKingside.hasMoved = true;
-                        }
-                    }
-                    
-                    return moveData;
-                }
-                
-                // Undo a move based on move data
-                undoMove(moveData) {
-                    if (!moveData) return false;
-                    
-                    // Restore pieces
-                    this.setPiece(moveData.fromRow, moveData.fromCol, moveData.piece);
-                    
-                    // If it was a normal capture
-                    if (moveData.capturedPiece && !moveData.enPassantCapture) {
-                        this.setPiece(moveData.toRow, moveData.toCol, moveData.capturedPiece);
-                    } else if (!moveData.castling) {
-                        // If not castling and not a capture, clear the destination
-                        this.setPiece(moveData.toRow, moveData.toCol, null);
-                    }
-                    
-                    // Handle en passant capture
-                    if (moveData.enPassantCapture) {
-                        this.setPiece(moveData.enPassantCapture.row, moveData.enPassantCapture.col, moveData.capturedPiece);
-                    }
-                    
-                    // Handle castling
-                    if (moveData.castling && moveData.rookMove) {
-                        const rm = moveData.rookMove;
-                        this.setPiece(rm.fromRow, rm.fromCol, rm.piece);
-                        this.setPiece(rm.toRow, rm.toCol, null);
-                    }
-                    
-                    // Restore special states
-                    this.specialStates.enPassantTarget = moveData.enPassantTarget;
-                    this.specialStates.kings = moveData.kings;
-                    this.specialStates.rooks = moveData.rooks;
-                    this.specialStates.combinedPieces = moveData.combinedPieces;
-                    
-                    return true;
-                }
-                
-                // Clone the board state
-                clone() {
-                    const newBoard = new ChessBoard();
-                    newBoard.boardState = JSON.parse(JSON.stringify(this.boardState));
-                    newBoard.specialStates = JSON.parse(JSON.stringify(this.specialStates));
-                    return newBoard;
-                }
-            }
-            
-            // Function to compute position hash
-            function computePositionHash(board, turn) {
-                const boardStr = JSON.stringify(board.boardState);
-                const combinedStr = JSON.stringify(board.specialStates.combinedPieces);
-                const enPassantStr = board.specialStates.enPassantTarget ? `${board.specialStates.enPassantTarget.row}-${board.specialStates.enPassantTarget.col}` : 'none';
-                const castlingStr = [
-                    board.specialStates.kings.white.hasMoved ? 1 : 0,
-                    board.specialStates.kings.black.hasMoved ? 1 : 0,
-                    board.specialStates.rooks.whiteKingside.hasMoved ? 1 : 0,
-                    board.specialStates.rooks.whiteQueenside.hasMoved ? 1 : 0,
-                    board.specialStates.rooks.blackKingside.hasMoved ? 1 : 0,
-                    board.specialStates.rooks.blackQueenside.hasMoved ? 1 : 0
-                ].join(',');
-                return `${boardStr}|${combinedStr}|${enPassantStr}|${castlingStr}|${turn}`;
-            }
-            
-            // UI Manager to handle the interface
-            class UIManager {
-                constructor(board, gameState) {
-                    this.board = board;
-                    this.gameState = gameState;
-                    this.squares = new Map(); // Map to store DOM references to squares
-                    this.pieceElements = new Map(); // Map to store DOM references to pieces
-                }
-                
-                // Initialize the board UI
-                initializeBoard() {
-                    boardElement.innerHTML = '';
-                    this.squares.clear();
-                    this.pieceElements.clear();
-                    
-                    // Create the board squares
-                    for (let row = 0; row < 8; row++) {
-                        for (let col = 0; col < 8; col++) {
-                            const square = document.createElement('div');
-                            square.classList.add('square');
-                            square.classList.add((row + col) % 2 === 0 ? 'white' : 'black');
-                            square.dataset.row = row;
-                            square.dataset.col = col;
-                            
-                            // Store reference to the square
-                            this.squares.set(`${row}-${col}`, square);
-                            
-                            // Add the pieces
-                            const piece = this.board.getPiece(row, col);
-                            if (piece) {
-                                const pieceElement = this.createPieceElement(piece, row, col);
-                                square.appendChild(pieceElement);
-                                this.pieceElements.set(`${row}-${col}`, pieceElement);
-                            }
-                            
-                            square.addEventListener('click', this.handleSquareClick.bind(this));
-                            boardElement.appendChild(square);
-                        }
-                    }
-                    
-                    // Highlight king in check if applicable
-                    this.updateCheckHighlight();
-                }
-                
-                // Create a piece element with proper draggable behavior
-                createPieceElement(piece, row, col) {
-                    const pieceElement = document.createElement('div');
-                    pieceElement.classList.add('piece');
-                    pieceElement.draggable = true;
-                    pieceElement.dataset.row = row;
-                    pieceElement.dataset.col = col;
-                    
-                    const { color, type } = this.board.parsePiece(piece);
-                    pieceElement.dataset.color = color;
-                    pieceElement.dataset.type = type;
-                    pieceElement.dataset.piece = piece;
-                    
-                    // Get the Unicode symbol for the piece
-                    pieceElement.textContent = PieceSymbols[color][type];
-                    
-                    // Style the piece with color and font size
-                    pieceElement.style.color = color === 'white' ? '#fff' : '#000';
-                    pieceElement.style.textShadow = color === 'white' ? '0 0 2px #000' : '0 0 2px #fff';
-                    
-                    // Check if this is a combined piece
-                    const secondaryType = this.board.getSecondaryType(row, col);
-                    if (secondaryType) {
-                        // Add the secondary piece indicator
-                        const secondaryPiece = document.createElement('div');
-                        secondaryPiece.classList.add('secondary-piece');
-                        secondaryPiece.textContent = PieceSymbols[color][secondaryType];
-                        secondaryPiece.style.color = color === 'white' ? '#fff' : '#000';
-                        secondaryPiece.style.textShadow = color === 'white' ? '0 0 2px #000' : '0 0 2px #fff';
-                        
-                        // Add a red dot indicator for combined pieces
-                        const combinedIndicator = document.createElement('div');
-                        combinedIndicator.classList.add('combined-indicator');
-                        combinedIndicator.textContent = '+';
-                        
-                        pieceElement.appendChild(secondaryPiece);
-                        pieceElement.appendChild(combinedIndicator);
-                    }
-                    
-                    // Add drag event listeners
-                    pieceElement.addEventListener('dragstart', this.handleDragStart.bind(this));
-                    pieceElement.addEventListener('dragend', this.handleDragEnd.bind(this));
-                    
-                    // Add touch event support for mobile
-                    pieceElement.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: false });
-                    pieceElement.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
-                    pieceElement.addEventListener('touchend', this.handleTouchEnd.bind(this));
-                    
-                    return pieceElement;
-                }
-                
-                // Show promotion chooser
-                showPromotionChooser(color, toRow, toCol, callback) {
-                    promotionModal.style.display = 'flex';
-                    
-                    const queenBtn = promotionModal.querySelector('[data-type="queen"]');
-                    queenBtn.textContent = `Queen ${PieceSymbols[color]['queen']}`;
-                    
-                    const rookBtn = promotionModal.querySelector('[data-type="rook"]');
-                    rookBtn.textContent = `Rook ${PieceSymbols[color]['rook']}`;
-                    
-                    const bishopBtn = promotionModal.querySelector('[data-type="bishop"]');
-                    bishopBtn.textContent = `Bishop ${PieceSymbols[color]['bishop']}`;
-                    
-                    const knightBtn = promotionModal.querySelector('[data-type="knight"]');
-                    knightBtn.textContent = `Knight ${PieceSymbols[color]['knight']}`;
-                    
-                    const btns = promotionModal.querySelectorAll('.promote-btn');
-                    const handleClick = (e) => {
-                        const chosenType = e.target.dataset.type;
-                        callback(chosenType);
-                        promotionModal.style.display = 'none';
-                        btns.forEach(btn => btn.removeEventListener('click', handleClick));
-                    };
-                    btns.forEach(btn => btn.addEventListener('click', handleClick));
-                }
-                
-                // Handle touch start
-                handleTouchStart(e) {
-                    if (this.gameState.gameOver) return;
-                    
-                    const piece = e.currentTarget;
-                    const color = piece.dataset.color;
-                    
-                    // Only allow touching pieces of the current turn
-                    if (color !== this.gameState.currentTurn) {
-                        return;
-                    }
-                    
-                    e.preventDefault(); // Prevent scrolling
-                    
-                    // Store the piece and original position
-                    this.gameState.draggedPiece = piece;
-                    this.gameState.dragStartSquare = {
-                        row: parseInt(piece.dataset.row),
-                        col: parseInt(piece.dataset.col)
-                    };
-                    
-                    // Show possible moves
-                    this.showPossibleMoves(parseInt(piece.dataset.row), parseInt(piece.dataset.col));
-                    
-                    // Highlight the piece
-                    piece.classList.add('dragging');
-                }
-                
-                // Handle touch move
-                handleTouchMove(e) {
-                    if (!this.gameState.draggedPiece) return;
-                    
-                    e.preventDefault(); // Prevent scrolling
-                    
-                    // Optional: You could implement visual feedback here
-                    // such as moving the piece with the finger
-                }
-                
-                // Handle touch end
-                handleTouchEnd(e) {
-                    if (!this.gameState.draggedPiece) return;
-                    
-                    const piece = this.gameState.draggedPiece;
-                    piece.classList.remove('dragging');
-                    
-                    // Get the touch position
-                    const touch = e.changedTouches[0];
-                    const target = document.elementFromPoint(touch.clientX, touch.clientY);
-                    
-                    // Find the square that was touched
-                    let square = target;
-                    while (square && !square.classList.contains('square')) {
-                        square = square.parentElement;
-                    }
-                    
-                    if (square) {
-                        const toRow = parseInt(square.dataset.row);
-                        const toCol = parseInt(square.dataset.col);
-                        
-                        // Try to move the piece
-                        this.tryMovePiece(
-                            this.gameState.dragStartSquare.row,
-                            this.gameState.dragStartSquare.col,
-                            toRow,
-                            toCol
-                        );
-                    }
-                    
-                    // Clear
-                    this.gameState.draggedPiece = null;
-                    this.gameState.dragStartSquare = null;
-                    this.clearPossibleMoves();
-                }
-                
-                // Handle piece drag start
-                handleDragStart(e) {
-                    if (this.gameState.gameOver) return;
-                    
-                    const piece = e.target;
-                    const color = piece.dataset.color;
-                    
-                    // Only allow dragging pieces of the current turn
-                    if (color !== this.gameState.currentTurn) {
-                        e.preventDefault();
-                        return;
-                    }
-                    
-                    this.gameState.draggedPiece = piece;
-                    this.gameState.dragStartSquare = {
-                        row: parseInt(piece.dataset.row),
-                        col: parseInt(piece.dataset.col)
-                    };
-                    
-                    piece.classList.add('dragging');
-                    
-                    // Show possible moves
-                    this.showPossibleMoves(parseInt(piece.dataset.row), parseInt(piece.dataset.col));
-                    
-                    // Set ghost drag image
-                    setTimeout(() => {
-                        piece.style.opacity = '0.6';
-                    }, 0);
-                    
-                    // Set data for drag operation
-                    e.dataTransfer.setData('text/plain', `${piece.dataset.row}-${piece.dataset.col}`);
-                    e.dataTransfer.effectAllowed = 'move';
-                }
-                
-                // Handle piece drag end
-                handleDragEnd(e) {
-                    const piece = e.target;
-                    
-                    piece.classList.remove('dragging');
-                    piece.style.opacity = '1';
-                    
-                    // Clear possible moves
-                    this.clearPossibleMoves();
-                    
-                    this.gameState.draggedPiece = null;
-                    this.gameState.dragStartSquare = null;
-                }
-                
-                // Handle square click (for movement and selection)
-                handleSquareClick(e) {
-                    if (this.gameState.gameOver) return;
-                    
-                    const square = e.currentTarget;
-                    const row = parseInt(square.dataset.row);
-                    const col = parseInt(square.dataset.col);
-                    
-                    // If a piece is already selected
-                    if (this.gameState.selectedPiece) {
-                        const selectedRow = parseInt(this.gameState.selectedPiece.parentElement.dataset.row);
-                        const selectedCol = parseInt(this.gameState.selectedPiece.parentElement.dataset.col);
-                        
-                        // If clicking on a different square, try to move
-                        if (selectedRow !== row || selectedCol !== col) {
-                            // Attempt to move the piece
-                            this.tryMovePiece(selectedRow, selectedCol, row, col);
-                        } else {
-                            // Clicking on the same square deselects the piece
-                            this.gameState.selectedPiece = null;
-                            this.clearHighlights();
-                            this.clearPossibleMoves();
-                        }
-                    } else {
-                        // If no piece is selected, try to select one
-                        const pieceElement = square.querySelector('.piece');
-                        if (pieceElement && pieceElement.dataset.color === this.gameState.currentTurn) {
-                            this.gameState.selectedPiece = pieceElement;
-                            this.highlightSquare(row, col);
-                            this.showPossibleMoves(row, col);
-                        }
-                    }
-                }
-                
-                // Try to move a piece and update the UI
-                tryMovePiece(fromRow, fromCol, toRow, toCol) {
-                    // Check if the move is valid
-                    if (!this.board.isValidMove(fromRow, fromCol, toRow, toCol)) {
-                        // Check if clicking on another of your own pieces
-                        const pieceElement = this.squares.get(`${toRow}-${toCol}`)?.querySelector('.piece');
-                        if (pieceElement && pieceElement.dataset.color === this.gameState.currentTurn) {
-                            // Deselect current piece and select the new one
-                            this.gameState.selectedPiece = pieceElement;
-                            this.clearHighlights();
-                            this.clearPossibleMoves();
-                            this.highlightSquare(toRow, toCol);
-                            this.showPossibleMoves(toRow, toCol);
-                        }
-                        return;
-                    }
-                    
-                    // Get piece info before moving
-                    const piece = this.board.getPiece(fromRow, fromCol);
-                    const { color } = this.board.parsePiece(piece);
-                    
-                    // Get target piece info for capturing
-                    const targetPiece = this.board.getPiece(toRow, toCol);
-                    if (targetPiece) {
-                        const { color: targetColor } = this.board.parsePiece(targetPiece);
-                        this.gameState.capturedPieces[targetColor].push(targetPiece);
-                        this.updateCapturedPieces();
-                    }
-                    
-                    // Execute the move
-                    const moveData = this.board.movePiece(fromRow, fromCol, toRow, toCol);
-                    
-                    // Add move to history
-                    this.gameState.moveHistory.push(moveData);
-                    
-                    // Handle en passant capture for UI
-                    if (moveData.enPassantCapture) {
-                        // Update the captured pieces display
-                        this.gameState.capturedPieces[moveData.capturedColor].push(moveData.capturedPiece);
-                        this.updateCapturedPieces();
-                    }
-                    
-                    // Deselect the piece
-                    this.gameState.selectedPiece = null;
-                    this.clearHighlights();
-                    this.clearPossibleMoves();
-                    
-                    if (moveData.promotion) {
-                        this.updateBoardUI();
-                        this.showPromotionChooser(color, toRow, toCol, (chosenType) => {
-                            this.board.setPiece(toRow, toCol, `${color}-${chosenType}`);
-                            this.updateBoardUI();
-                            this.gameState.currentTurn = this.gameState.currentTurn === 'white' ? 'black' : 'white';
-                            turnIndicator.textContent = `Turn: ${this.gameState.currentTurn.charAt(0).toUpperCase() + this.gameState.currentTurn.slice(1)}`;
-                            const hash = computePositionHash(this.board, this.gameState.currentTurn);
-                            moveData.postMoveHash = hash;
-                            let count = (GameState.positionCounts.get(hash) || 0) + 1;
-                            GameState.positionCounts.set(hash, count);
-                            this.checkGameState();
-                        });
-                    } else {
-                        this.updateBoardUI();
-                        this.gameState.currentTurn = this.gameState.currentTurn === 'white' ? 'black' : 'white';
-                        turnIndicator.textContent = `Turn: ${this.gameState.currentTurn.charAt(0).toUpperCase() + this.gameState.currentTurn.slice(1)}`;
-                        const hash = computePositionHash(this.board, this.gameState.currentTurn);
-                        moveData.postMoveHash = hash;
-                        let count = (GameState.positionCounts.get(hash) || 0) + 1;
-                        GameState.positionCounts.set(hash, count);
-                        this.checkGameState();
-                    }
-                }
-                
-                // Update the board UI to match the board state
-                updateBoardUI() {
-                    // Clear all pieces from the UI
-                    this.squares.forEach((square) => {
-                        square.innerHTML = '';
-                    });
-                    this.pieceElements.clear();
-                    
-                    // Add pieces based on current board state
-                    for (let row = 0; row < 8; row++) {
-                        for (let col = 0; col < 8; col++) {
-                            const piece = this.board.getPiece(row, col);
-                            if (piece) {
-                                const square = this.squares.get(`${row}-${col}`);
-                                if (square) {
-                                    const pieceElement = this.createPieceElement(piece, row, col);
-                                    square.appendChild(pieceElement);
-                                    this.pieceElements.set(`${row}-${col}`, pieceElement);
-                                }
-                            }
-                        }
-                    }
-                    
-                    // Update check highlight
-                    this.updateCheckHighlight();
-                }
-                
-                // Update the captured pieces display
-                updateCapturedPieces() {
-                    // Clear current displays
-                    whiteCapturedElement.innerHTML = '';
-                    blackCapturedElement.innerHTML = '';
-                    
-                    // Add white captured pieces (displayed at bottom)
-                    this.gameState.capturedPieces.white.forEach(piece => {
-                        const { type } = this.board.parsePiece(piece);
-                        const capturedElement = document.createElement('span');
-                        capturedElement.classList.add('captured-piece');
-                        capturedElement.textContent = PieceSymbols.white[type];
-                        capturedElement.style.color = '#fff';
-                        capturedElement.style.textShadow = '0 0 2px #000';
-                        whiteCapturedElement.appendChild(capturedElement);
-                    });
-                    
-                    // Add black captured pieces (displayed at top)
-                    this.gameState.capturedPieces.black.forEach(piece => {
-                        const { type } = this.board.parsePiece(piece);
-                        const capturedElement = document.createElement('span');
-                        capturedElement.classList.add('captured-piece');
-                        capturedElement.textContent = PieceSymbols.black[type];
-                        capturedElement.style.color = '#000';
-                        capturedElement.style.textShadow = '0 0 2px #fff';
-                        blackCapturedElement.appendChild(capturedElement);
-                    });
-                }
-                
-                // Highlight a square
-                highlightSquare(row, col) {
-                    const square = this.squares.get(`${row}-${col}`);
-                    if (square) {
-                        square.classList.add('highlighted');
-                    }
-                }
-                
-                // Clear all highlights
-                clearHighlights() {
-                    this.squares.forEach(square => {
-                        square.classList.remove('highlighted');
-                    });
-                }
-                
-                // Show possible moves for a piece
-                showPossibleMoves(row, col) {
-                    const validMoves = this.board.getValidMoves(row, col);
-                    
-                    validMoves.forEach(move => {
-                        const targetSquare = this.squares.get(`${move.row}-${move.col}`);
-                        if (targetSquare) {
-                            // Check if it's a capture
-                            const isCapture = this.board.getPiece(move.row, move.col) !== null;
-                            
-                            const indicator = document.createElement('div');
-                            indicator.classList.add(isCapture ? 'possible-capture' : 'possible-move');
-                            
-                            // Add event listener for the indicator
-                            indicator.addEventListener('click', () => {
-                                this.tryMovePiece(row, col, move.row, move.col);
-                            });
-                            
-                            // Add dragover and drop events for drag-and-drop
-                            targetSquare.addEventListener('dragover', this.handleDragOver);
-                            targetSquare.addEventListener('drop', (e) => this.handleDrop(e, move.row, move.col));
-                            
-                            targetSquare.appendChild(indicator);
-                        }
-                    });
-                }
-                
-                // Clear possible moves
-                clearPossibleMoves() {
-                    document.querySelectorAll('.possible-move, .possible-capture').forEach(indicator => {
-                        indicator.remove();
-                    });
-                    
-                    // Remove drag-and-drop event listeners
-                    this.squares.forEach(square => {
-                        square.removeEventListener('dragover', this.handleDragOver);
-                        const newSquare = square.cloneNode(true);
-                        if (square.parentNode) {
-                            square.parentNode.replaceChild(newSquare, square);
-                            
-                            // Restore click listener
-                            newSquare.addEventListener('click', this.handleSquareClick.bind(this));
-                            
-                            // Update square reference in the map
-                            const key = `${newSquare.dataset.row}-${newSquare.dataset.col}`;
-                            this.squares.set(key, newSquare);
-                            
-                            // Restore piece event listeners if there's a piece
-                            const pieceElement = newSquare.querySelector('.piece');
-                            if (pieceElement) {
-                                pieceElement.addEventListener('dragstart', this.handleDragStart.bind(this));
-                                pieceElement.addEventListener('dragend', this.handleDragEnd.bind(this));
-                                pieceElement.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: false });
-                                pieceElement.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
-                                pieceElement.addEventListener('touchend', this.handleTouchEnd.bind(this));
-                                
-                                // Update piece reference in the map
-                                this.pieceElements.set(key, pieceElement);
-                            }
-                        }
-                    });
-                }
-                
-                // Handle drag over
-                handleDragOver(e) {
-                    e.preventDefault(); // Allow drop
-                }
-                
-                // Handle drop
-                handleDrop(e, toRow, toCol) {
-                    e.preventDefault();
-                    
-                    if (!this.gameState.draggedPiece || !this.gameState.dragStartSquare) return;
-                    
-                    // Try to move the piece
-                    this.tryMovePiece(
-                        this.gameState.dragStartSquare.row,
-                        this.gameState.dragStartSquare.col,
-                        toRow,
-                        toCol
-                    );
-                }
-                
-                // Check for checkmate, stalemate, or check
-                checkGameState() {
-                    const hash = computePositionHash(this.board, this.gameState.currentTurn);
-                    if (GameState.positionCounts.get(hash) >= 3) {
-                        gameMessage.textContent = 'Draw by threefold repetition!';
-                        gameMessage.className = 'game-message stalemate';
-                        this.gameState.gameOver = true;
-                        return;
-                    }
-                    
-                    const gameState = this.board.checkGameState(this.gameState.currentTurn);
-                    
-                    // Update UI based on game state
-                    switch (gameState) {
-                        case 'checkmate':
-                            gameMessage.textContent = `Checkmate! ${this.gameState.currentTurn === 'white' ? 'Black' : 'White'} wins!`;
-                            gameMessage.className = 'game-message checkmate';
-                            this.gameState.gameOver = true;
-                            break;
-                        case 'stalemate':
-                            gameMessage.textContent = 'Stalemate! The game is a draw.';
-                            gameMessage.className = 'game-message stalemate';
-                            this.gameState.gameOver = true;
-                            break;
-                        case 'check':
-                            gameMessage.textContent = `${this.gameState.currentTurn.charAt(0).toUpperCase() + this.gameState.currentTurn.slice(1)} is in check!`;
-                            gameMessage.className = 'game-message check';
-                            break;
-                        default:
-                            gameMessage.textContent = '';
-                            gameMessage.className = 'game-message';
-                    }
-                    
-                    // Update king highlight
-                    this.updateCheckHighlight();
-                }
-                
-                // Highlight the king that is in check
-                updateCheckHighlight() {
-                    // Clear previous check highlights
-                    this.squares.forEach(square => {
-                        square.classList.remove('check');
-                    });
-                    
-                    // Check if the current player's king is in check
-                    const kingPos = this.board.specialStates.kings[this.gameState.currentTurn];
-                    const inCheck = this.board.isSquareAttacked(
-                        kingPos.row, 
-                        kingPos.col, 
-                        this.gameState.currentTurn === 'white' ? 'black' : 'white'
-                    );
-                    
-                    if (inCheck) {
-                        const kingSquare = this.squares.get(`${kingPos.row}-${kingPos.col}`);
-                        if (kingSquare) {
-                            kingSquare.classList.add('check');
-                        }
-                    }
-                }
-                
-                // Undo the last move
-                undoMove() {
-                    if (this.gameState.moveHistory.length === 0 || this.gameState.gameOver) return;
-                    
-                    // Get the last move
-                    const lastMove = this.gameState.moveHistory.pop();
-                    
-                    // Restore board state
-                    this.board.undoMove(lastMove);
-                    
-                    // Update the UI
-                    this.updateBoardUI();
-                    
-                    // Remove captured piece from list if there was one
-                    if (lastMove.capturedPiece) {
-                        const capturedPieces = this.gameState.capturedPieces[lastMove.capturedColor];
-                        const index = capturedPieces.indexOf(lastMove.capturedPiece);
-                        if (index !== -1) {
-                            capturedPieces.splice(index, 1);
-                            this.updateCapturedPieces();
-                        }
-                    }
-                    
-                    // Decrement position count
-                    const hash = lastMove.postMoveHash;
-                    if (hash) {
-                        let count = GameState.positionCounts.get(hash) - 1;
-                        if (count > 0) {
-                            GameState.positionCounts.set(hash, count);
-                        } else {
-                            GameState.positionCounts.delete(hash);
-                        }
-                    }
-                    
-                    // Switch back to previous player's turn
-                    this.gameState.currentTurn = this.gameState.currentTurn === 'white' ? 'black' : 'white';
-                    turnIndicator.textContent = `Turn: ${this.gameState.currentTurn.charAt(0).toUpperCase() + this.gameState.currentTurn.slice(1)}`;
-                    
-                    // Clear any check/checkmate/stalemate messages
-                    gameMessage.textContent = '';
-                    gameMessage.className = 'game-message';
-                    this.gameState.gameOver = false;
-                    
-                    // Update check highlight
-                    this.updateCheckHighlight();
-                }
-            }
-            
-            // Initialize the game
-            let chessBoard = new ChessBoard();
-            let uiManager = new UIManager(chessBoard, GameState);
-            
-            // Initialize the board UI
-            uiManager.initializeBoard();
-            
-            // Toggle help panel
-            function toggleHelp() {
-                helpPanel.style.display = helpPanel.style.display === 'none' ? 'block' : 'none';
-            }
-            
-            // Reset the game
-            function resetGame() {
-                // Reset game state
-                GameState.selectedPiece = null;
-                GameState.currentTurn = 'white';
-                GameState.gameOver = false;
-                GameState.draggedPiece = null;
-                GameState.dragStartSquare = null;
-                GameState.moveHistory = [];
-                GameState.capturedPieces = {
-                    white: [],
-                    black: []
-                };
-                GameState.positionCounts = new Map();
-                
-                // Create a new board
-                chessBoard = new ChessBoard();
-                uiManager = new UIManager(chessBoard, GameState);
-                
-                // Update the UI
-                uiManager.initializeBoard();
-                uiManager.updateCapturedPieces();
-                
-                // Reset turn indicator and messages
-                turnIndicator.textContent = `Turn: White`;
-                gameMessage.textContent = '';
-                gameMessage.className = 'game-message';
-            }
-            
-            // Add event listeners
-            resetBtn.addEventListener('click', resetGame);
-            undoBtn.addEventListener('click', () => uiManager.undoMove());
-            toggleHelpBtn.addEventListener('click', toggleHelp);
-        });
-    </script>
+ 
+    
+    <header class="main-header">
+        <div class="top-promo">
+            <p>Get additional 5% off on Prepaid Orders | Code: <strong>BOATHE</strong> <a href="#" class="shop-now-link">Shop Now</a></p>
+        </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Opposite Header Image Switch</title>
+
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+  }
+
+  .header-nav-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    background: #fff;
+  }
+
+  .header-nav-bar img {
+    width: 100%;
+    display: block;
+    transition: opacity 0.25s ease;
+  }
+
+  .content {
+    margin-top: 120px;
+    padding: 20px;
+    height: 2000px;
+    background: #f5f5f5;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-nav-bar">
+    <img
+      id="headerImage"
+      src="https://i.ibb.co/RTMS8q6n/1000022455.jpg"
+      alt="Header Image"
+    >
+  </div>
+</header>
+
+
+
+<script>
+  const headerImage = document.getElementById("headerImage");
+
+  const topImg = "https://i.ibb.co/RTMS8q6n/1000022455.jpg";
+  const scrollImg = "https://i.ibb.co/3yGZtgkD/Screenshot-2025-1105-141302.png";
+
+  window.addEventListener("scroll", () => {
+    if (window.scrollY > 20) {
+      headerImage.src = scrollImg;
+    } else {
+      headerImage.src = topImg;
+    }
+  });
+</script>
+
 </body>
 </html>
-    
-  </body>
+
+    <img src="https://i.ibb.co/9mHTf1zV/1000006432.jpg"
+     alt="Edge to Edge Image" 
+     class="full-image">  
+     
+  </div>
   
+  
+  <!-- Snow container -->
+<div id="snowfall"></div>
+
+
+<script>
+const snowfall = document.getElementById("snowfall");
+
+/* Adjust these for density & performance */
+const SNOW_INTERVAL = 120;   // lower = more snow
+const MIN_SIZE = 2;
+const MAX_SIZE = 6;
+const MIN_DURATION = 6;
+const MAX_DURATION = 12;
+
+function createSnowflake(){
+  const snow = document.createElement("div");
+  snow.className = "snowflake";
+
+  const size = Math.random() * (MAX_SIZE - MIN_SIZE) + MIN_SIZE;
+  const duration = Math.random() * (MAX_DURATION - MIN_DURATION) + MIN_DURATION;
+
+  snow.style.width = size + "px";
+  snow.style.height = size + "px";
+  snow.style.left = Math.random() * 100 + "vw";
+  snow.style.opacity = Math.random() * 0.6 + 0.3;
+  snow.style.animationDuration = duration + "s";
+
+  snowfall.appendChild(snow);
+
+  /* Remove after animation completes */
+  setTimeout(() => snow.remove(), duration * 1000);
+}
+
+/* Continuous generation */
+setInterval(createSnowflake, SNOW_INTERVAL);
+</script>
+
+  
+  <!-- Category Bar -->
+<div class="category-bar">
+  <div class="category" onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'" style="cursor:pointer;">
+    <img src="https://i.supaimg.com/e02fcb20-e46f-4531-99d1-0fb69ab4305f.svg" alt="">
+    <p>Best Sellers</p>
+  </div>
+
+  <div class="category" onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'" style="cursor:pointer;">
+    <img src="https://i.supaimg.com/65ca75f7-9662-4470-a1d5-43666d649edc.png" alt="">
+    <p>True Wireless Earbuds</p>
+  </div>
+
+  <div class="category" onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'" style="cursor:pointer;">
+    <img src="https://i.supaimg.com/bab7a746-a496-4fb3-af3d-8cd8881c2bf8.png" alt="">
+    <p>Wireless Headphones</p>
+  </div>
+
+  <div class="category" onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'" style="cursor:pointer;">
+    <img src="https://i.supaimg.com/0534cc60-e475-46cf-b61e-56ff6e2b9c05.png" alt="">
+    <p>Neckbands</p>
+  </div>
+
+  <div class="category" onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'" style="cursor:pointer;">
+    <img src="https://i.supaimg.com/7365e84b-a6f3-4a6e-a40c-497c77714aaa.png" alt="">
+    <p>Smart Watches</p>
+  </div>
+
+  <div class="category" onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'" style="cursor:pointer;">
+    <img src="https://i.supaimg.com/27a983b2-6905-452f-a78e-b378ed7e4ab9.png" alt="">
+    <p>Wireless Speakers</p>
+  </div>
+
+  <div class="category" onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'" style="cursor:pointer;">
+    <img src="https://i.supaimg.com/36e77ebd-9d38-4e87-bbd9-3999da034c9b.png" alt="">
+    <p>Soundbars</p>
+  </div>
+
+  <div class="category" onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'" style="cursor:pointer;">
+    <img src="https://i.supaimg.com/8ec8a88e-fdf0-4990-a0aa-c7fa980eddcb.png" alt="">
+    <p>Party Speakers</p>
+  </div>
+
+  <div class="category" onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'" style="cursor:pointer;">
+    <img src="https://i.supaimg.com/0f7bd06a-162b-49b5-b851-50bc67ad625c.png" alt="">
+    <p>Power Banks</p>
+  </div>
+
+  <div class="category" onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'" style="cursor:pointer;">
+    <img src="https://i.supaimg.com/d2381549-1c41-4c4e-9838-2154b7642f47.png" alt="">
+    <p>Wired Headphones</p>
+  </div>
+
+  <div class="category" onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'" style="cursor:pointer;">
+    <img src="https://i.supaimg.com/7f49ffc6-45a9-48d4-92a0-fee398e1a3db.png" alt="">
+    <p>Wired Earphones</p>
+  </div>
+
+  <div class="category" onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'" style="cursor:pointer;">
+    <img src="https://i.supaimg.com/c78caaa8-a1ed-4b8e-9134-3596a2fe2cf9.png" alt="">
+    <p>boAt Tag</p>
+  </div>
+
+  <div class="category" onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'" style="cursor:pointer;">
+    <img src="https://i.supaimg.com/becdeb61-5b6b-49d5-ab12-50b8a0c05f05.png" alt="">
+    <p>Nirvana Series</p>
+  </div>
+
+  <div class="category" onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'" style="cursor:pointer;">
+    <img src="https://i.supaimg.com/a4668486-a50c-42ab-853a-30712e78cbd9.png" alt="">
+    <p>Gaming Series</p>
+  </div>
+</div>
+
+<!-- Slider -->
+<div class="slider" id="slider">
+  <div class="slides">
+    <div class="slide" 
+         style="background-image: url('https://i.supaimg.com/e147d58b-f069-4410-9788-f4d685929a62.gif'); cursor:pointer;" 
+         onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'"></div>
+
+    <div class="slide" 
+         style="background-image: url('https://i.ibb.co/ycLLh7tT/1080x720-3f154ca3-bc4f-4583-a2e2-d39e09808bd5.png'); cursor:pointer;" 
+         onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'"></div>
+
+    <div class="slide" 
+         style="background-image: url('https://i.supaimg.com/a7092043-fbdd-407f-8ad8-b04d634a8e4d.png'); cursor:pointer;" 
+         onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'"></div>
+
+    <div class="slide" 
+         style="background-image: url('https://i.supaimg.com/bae0830f-15a6-4a69-a570-2279991355be.png'); cursor:pointer;" 
+         onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'"></div>
+
+    <div class="slide" 
+         style="background-image: url('https://i.ibb.co/KjJdgNgQ/1080x720-e86dc5e8-e3db-4073-a64f-cba02ff2266f.png'); cursor:pointer;" 
+         onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'"></div>
+
+    <div class="slide" 
+         style="background-image: url('https://i.supaimg.com/cbe9f0ae-33ca-457f-a0d9-66f2795da06a.png'); cursor:pointer;" 
+         onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'"></div>
+
+    <div class="slide" 
+         style="background-image: url('https://i.supaimg.com/eb364156-0d69-430f-93f1-bc26e969422c.png'); cursor:pointer;" 
+         onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'"></div>
+
+    <div class="slide" 
+         style="background-image: url('https://i.supaimg.com/848bfffd-d204-481c-880f-e05c155f30dc.png'); cursor:pointer;" 
+         onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'"></div>
+
+    <div class="slide" 
+         style="background-image: url('https://i.supaimg.com/e1bb5021-ce83-4a32-a44b-8e8c4f40eb4d.png'); cursor:pointer;" 
+         onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'"></div>
+  </div>
+
+  <div class="slider-btns" id="dots"></div>
+</div>
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body { margin: 0; }
+  .full-image {
+    display: block;
+    width: 100vw;
+    height: auto;
+  }
+</style>
+</head>
+<body>
+  
+
+  
+<img src="https://i.ibb.co/840KhdCY/Screenshot-2025-11-12-17-28-59-579-com-android-chrome-edit.jpg"
+     alt="Edge to Edge Image" 
+     class="full-image">  
+     
+<img src="https://i.ibb.co/0jTT9nkm/Screenshot-2025-11-12-17-14-58-509-com-android-chrome-edit.jpg"
+     alt="Edge to Edge Image" 
+     class="full-image">
+     
+        
+<style>
+  body {
+    margin: 0;
+    padding-bottom: 70px; /* space for bottom nav */
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+  }
+
+  .mobile-bottom-menu {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #fff;
+    z-index: 9999;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
+  }
+
+  .mobile-bottom-menu img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+</style>
+</head>
+
+<body>
+
+
+
+<!-- Bottom Navigation -->
+<nav class="mobile-bottom-menu">
+  <img
+    src="https://i.ibb.co/Kj2hpjWf/1000022465.jpg"
+    alt="Mobile Bottom Menu"
+  />
+</nav>
+
+
+
+
+<div class="product-grid">
+  <div class="product-card" onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'">
+    <img src="https://i.ibb.co/wh9GL17d/AD-Alpha-new-colors.png" alt="">
+    <div class="tag-bar">35 Hours Playback</div>
+    <div class="product-info">
+      <h3>boAt Airdopes Alpha</h3>
+      <p class="price">₹299 <span>₹3,498</span></p>
+      <p class="offer">71% off</p>
+      <div class="color-options">
+        <div class="color-dot blue"></div>
+        <div class="color-dot gray"></div>
+        <span class="color-more">+5</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'">
+    <img src="https://i.ibb.co/XfJrnhLs/Stone-350-pro-1.png" alt="">
+    <div class="tag-bar">12 Hours Playback</div>
+    <div class="product-info">
+      <h3>boAt Stone 350 Pro</h3>
+      <p class="price">₹399 <span>₹4,999</span></p>
+      <p class="offer">66% off</p>
+      <div class="color-options">
+        <div class="color-dot black"></div>
+        <div class="color-dot grey"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'">
+    <img src="https://i.ibb.co/SwqYyRVr/zenith-pro-LR.png" alt="">
+    <div class="tag-bar">80 Hours Playback</div>
+    <div class="product-info">
+      <h3>boAt Nirvana Zenith Pro</h3>
+      <p class="price">₹799 <span>₹14,999</span></p>
+      <p class="offer">81% off</p>
+      <div class="color-options">
+        <div class="color-dot black"></div>
+        <span class="color-more">+3</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'">
+    <img src="https://i.ibb.co/nHw59S8/Lifestyle-render-154400cd-4bd3-4dd8-9c4a-e56f27910199.jpg" alt="">
+    <div class="tag-bar">BT Calling</div>
+    <div class="product-info">
+      <h3>boAt Lunar Discovery</h3>
+      <p class="price">₹499 <span>₹8,499</span></p>
+      <p class="offer">82% off</p>
+      <div class="color-options">
+        <div class="color-dot blue"></div>
+        <div class="color-dot gray"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'">
+    <img src="https://i.ibb.co/9H0vXkh2/r255pro-55d805bc-f2e1-4861-9533-8eee57081305.jpg" alt="">
+    <div class="tag-bar">60 Hours Playback</div>
+    <div class="product-info">
+      <h3>boAt Rockerz 255 Pro+</h3>
+      <p class="price">₹619 <span>₹3,999</span></p>
+      <p class="offer">70% off</p>
+      <div class="color-options">
+        <div class="color-dot black"></div>
+        <div class="color-dot gray"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'">
+    <img src="https://i.ibb.co/jvK6HX8G/Rockerz-460.png" alt="">
+    <div class="tag-bar">30 Hours Playback</div>
+    <div class="product-info">
+      <h3>boAt Rockerz 460</h3>
+      <p class="price">₹249 <span>₹2,499</span></p>
+      <p class="offer">48% off</p>
+      <div class="color-options">
+        <div class="color-dot blue"></div>
+        <div class="color-dot pink"></div>
+        <span class="color-more">+3</span>
+      </div>
+    </div>
+  </div>
+</div>
+  </section>
+
+<img src="https://i.ibb.co/M5KNr8jh/Screenshot-2025-11-12-20-02-16-739-com-android-chrome-edit.jpg"
+     alt="Edge to Edge Image" 
+     class="full-image">  
+
+<img 
+  src="https://i.ibb.co/1tb7sbSw/Screenshot-2025-11-13-19-24-20-992-com-android-chrome-edit-min.jpg"
+  alt="Edge to Edge Image"
+  class="full-image"
+  style="cursor:pointer;"
+  onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'">
+     
+<img src="https://i.ibb.co/cc7SM0L0/Screenshot-2025-11-12-20-03-20-794-com-android-chrome-edit-2.jpg"
+     alt="Edge to Edge Image" 
+     class="full-image">  
+
+<div class="product-grid">
+  <div class="product-card" onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'">
+    <img src="https://i.ibb.co/Xfs9NhxL/AD-181-pro-1.png" alt="">
+    <div class="tag-bar">35 Hours Playback</div>
+    <div class="product-info">
+      <h3>boAt Airdopes 181 Pro</h3>
+      <p class="price">₹599 <span>₹3,498</span></p>
+      <p class="offer">74% off</p>
+      <div class="color-options">
+        <div class="color-dot blue"></div>
+        <div class="color-dot gray"></div>
+        <span class="color-more">+5</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'">
+    <img src="https://i.ibb.co/4njGYM3F/Storm-Call-3.jpg" alt="">
+    <div class="tag-bar">12 Hours Playback</div>
+    <div class="product-info">
+      <h3>boAt Stone Call 3</h3>
+      <p class="price">₹379 <span>₹4,999</span></p>
+      <p class="offer">86% off</p>
+      <div class="color-options">
+        <div class="color-dot black"></div>
+        <div class="color-dot gray"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'">
+    <img src="https://i.ibb.co/chkPL5Vc/63-pro-LR.png" alt="">
+    <div class="tag-bar">80 Hours Playback</div>
+    <div class="product-info">
+      <h3>boAt Party Pal 63 Pro</h3>
+      <p class="price">₹769 <span>₹14,999</span></p>
+      <p class="offer">81% off</p>
+      <div class="color-options">
+        <div class="color-dot black"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'">
+    <img src="https://i.ibb.co/CpHqLvx4/701-ANC.png" alt="">
+    <div class="tag-bar">BT Calling</div>
+    <div class="product-info">
+      <h3>boAt Airdopes Prime 701-ANC</h3>
+      <p class="price">₹499 <span>₹8,499</span></p>
+      <p class="offer">82% off</p>
+      <div class="color-options">
+        <div class="color-dot blue"></div>
+        <div class="color-dot gray"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'">
+    <img src="https://i.ibb.co/RphtGhCM/Rockerz-650-pp-renders-main-banner-124.png" alt="">
+    <div class="tag-bar">60 Hours Playback</div>
+    <div class="product-info">
+      <h3>boAt Rockerz 650 Pro+</h3>
+      <p class="price">₹429 <span>₹3,999</span></p>
+      <p class="offer">70% off</p>
+      <div class="color-options">
+        <div class="color-dot black"></div>
+        <div class="color-dot gray"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'">
+    <img src="https://i.ibb.co/CpyjZgBD/413-lifestyle.png" alt="">
+    <div class="tag-bar">30 Hours Playback</div>
+    <div class="product-info">
+      <h3>boAt Rockerz 413</h3>
+      <p class="price">₹179 <span>₹2,499</span></p>
+      <p class="offer">48% off</p>
+      <div class="color-options">
+        <div class="color-dot blue"></div>
+        <div class="color-dot pink"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  </section>
+
+<img src="https://i.ibb.co/wF6dQrFX/Screenshot-2025-11-12-17-53-48-804-com-android-chrome.jpg"
+     alt="Edge to Edge Image" 
+     class="full-image">
+     
+  <section>
+
+<img src="https://i.ibb.co/x87L1vHc/1000005309.jpg"
+     alt="Edge to Edge Image" 
+     class="full-image">  
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GIF Slider</title>
+
+<style>
+  body {
+    margin: 0;
+    font-family: Inter, sans-serif;
+    background: #fff;
+    padding: 20px 0;
+  }
+
+  .slider-container {
+    width: 100%;
+    overflow-x: auto;
+    display: flex;
+    gap: 16px;
+    scroll-snap-type: x mandatory;
+  }
+
+  .slider-container::-webkit-scrollbar {
+    display: none;
+  }
+
+  .card {
+    flex: 0 0 260px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    scroll-snap-align: start;
+  }
+
+  .card-img {
+    width: 100%;
+    height: 260px;
+    overflow: hidden;
+    border-radius: 18px 18px 0 0;
+  }
+
+  .card-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .thumb-box {
+    width: 58px;
+    height: 58px;
+    background: #fff;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+    border-radius: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: -30px auto 0;
+    position: relative;
+    z-index: 10;
+  }
+
+  .thumb-box img {
+    width: 38px;
+    height: 38px;
+    object-fit: contain;
+  }
+
+  .card-body {
+    text-align: center;
+    padding: 12px 10px 18px;
+  }
+
+  .title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .price-wrap {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    font-size: 16px;
+  }
+
+  .price { font-weight: 800; }
+  .old { text-decoration: line-through; color: #9a9a9a; }
+  .off { color: #0a8a40; font-weight: 700; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div class="slider-container">
+
+  <!-- CARD 1 -->
+  <div class="card">
+    <div class="card-img">
+      <img src="https://i.ibb.co/s9RMHXfN/quinn-RUxbh-R7-Cvjk-Ntl-FUDxgw9-1-1.gif" alt="">
+    </div>
+    <div class="thumb-box"><img src="https://i.ibb.co/2n4bX0C/thumb-1.png"></div>
+    <div class="card-body">
+      <div class="title">boAt Airdopes 71</div>
+      <div class="price-wrap">
+        <span class="price">₹1,799</span>
+        <span class="old">₹3,990</span>
+        <span class="off">55% off</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD 2 -->
+  <div class="card">
+    <div class="card-img">
+      <img src="https://i.ibb.co/7dBSdtvZ/quinn-Bejc8-URj-U1-NSXdhab-LCm-D-1.gif" alt="">
+    </div>
+    <div class="thumb-box"><img src="https://i.ibb.co/2n4bX0C/thumb-2.png"></div>
+    <div class="card-body">
+      <div class="title">boAt Airdopes 161 Pro</div>
+      <div class="price-wrap">
+        <span class="price">₹1,499</span>
+        <span class="old">₹4,490</span>
+        <span class="off">67% off</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD 3 -->
+  <div class="card">
+    <div class="card-img">
+      <img src="https://i.ibb.co/MxLB4TJr/quinn-Oy-JHanx4-QSd-UN3-OVGTO7-C-1.gif" alt="">
+    </div>
+    <div class="thumb-box"><img src="https://i.ibb.co/2n4bX0C/thumb-3.png"></div>
+    <div class="card-body">
+      <div class="title">boAt Airdopes 171</div>
+      <div class="price-wrap">
+        <span class="price">₹1,999</span>
+        <span class="old">₹4,990</span>
+        <span class="off">60% off</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD 4 -->
+  <div class="card">
+    <div class="card-img">
+      <img src="https://i.ibb.co/HLMGHXVp/quinn-Cps-RId-JWtp-Xy-FN3enwb-Xd-1.gif" alt="">
+    </div>
+    <div class="thumb-box"><img src="https://i.ibb.co/2n4bX0C/thumb-4.png"></div>
+    <div class="card-body">
+      <div class="title">boAt Airdopes 181</div>
+      <div class="price-wrap">
+        <span class="price">₹1,899</span>
+        <span class="old">₹4,590</span>
+        <span class="off">58% off</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD 5 -->
+  <div class="card">
+    <div class="card-img">
+      <img src="https://i.ibb.co/TB5rYk8B/quinn-j1-Tw-OEece-KYOJc7d7m-Aim-2.gif" alt="">
+    </div>
+    <div class="thumb-box"><img src="https://i.ibb.co/2n4bX0C/thumb-4.png"></div>
+    <div class="card-body">
+      <div class="title">boAt Airdopes 181</div>
+      <div class="price-wrap">
+        <span class="price">₹1,899</span>
+        <span class="old">₹4,590</span>
+        <span class="off">58% off</span>
+      </div>
+    </div>
+  </div>
+  
+</div>
+
+<script>
+  const slider = document.querySelector(".slider-container");
+  let isDown = false, startX, scrollLeft;
+
+  slider.addEventListener("mousedown", e => {
+    isDown = true;
+    startX = e.pageX - slider.offsetLeft;
+    scrollLeft = slider.scrollLeft;
+  });
+
+  ["mouseup","mouseleave"].forEach(ev =>
+    slider.addEventListener(ev, () => isDown = false)
+  );
+
+  slider.addEventListener("mousemove", e => {
+    if (!isDown) return;
+    e.preventDefault();
+    slider.scrollLeft = scrollLeft - (e.pageX - slider.offsetLeft - startX) * 1.2;
+  });
+</script>
+
+</body>
+</html>
+
+
+</div>
+
+<img src="https://i.ibb.co/9mHTf1zV/1000006432.jpg"
+     alt="Edge to Edge Image" 
+     class="full-image">  
+
+<div class="product-grid">
+
+  <div class="product-card" onclick="window.open('https://dhamaka-sale-is-live.pages.dev/', '_blank')" style="cursor: pointer;">
+    <img src="https://i.ibb.co/rKG9BXF3/Chrome-Eon-Lifestyle.png" alt="">
+    <div class="tag-bar">35 Hours Playback</div>
+    <div class="product-info">
+      <h3>boAt Chrome Eon</h3>
+      <p class="price">₹239 <span>₹3,498</span></p>
+      <p class="offer">72% off</p>
+      <div class="color-options">
+        <div class="color-dot blue"></div>
+        <div class="color-dot gray"></div>
+        <span class="color-more">+5</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" onclick="window.open('https://dhamaka-sale-is-live.pages.dev/', '_blank')" style="cursor: pointer;">
+    <img src="https://i.ibb.co/xvgLVm2/3050D-1.png" alt="">
+    <div class="tag-bar">12 Hours Playback</div>
+    <div class="product-info">
+      <h3>boAt Aavante 2.1 3050D</h3>
+      <p class="price">₹359 <span>₹4,999</span></p>
+      <p class="offer">66% off</p>
+      <div class="color-options">
+        <div class="color-dot black"></div>
+        <div class="color-dot gray"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" onclick="window.open('https://dhamaka-sale-is-live.pages.dev/', '_blank')" style="cursor: pointer;">
+    <img src="https://i.ibb.co/ds3qP8XT/Partypal-65-Pro.png" alt="">
+    <div class="tag-bar">80 Hours Playback</div>
+    <div class="product-info">
+      <h3>boAt Nirvana Zenith Pro</h3>
+      <p class="price">₹799 <span>₹14,999</span></p>
+      <p class="offer">81% off</p>
+      <div class="color-options">
+        <div class="color-dot black"></div>
+        <span class="color-more">+3</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" onclick="window.open('https://dhamaka-sale-is-live.pages.dev/', '_blank')" style="cursor: pointer;">
+    <img src="https://i.ibb.co/My4Ph8FG/Airdopes-Ace-Gen-2.png" alt="">
+    <div class="tag-bar">BT Calling</div>
+    <div class="product-info">
+      <h3>boAt Airdrops Ace Gen 2</h3>
+      <p class="price">₹429 <span>₹8,499</span></p>
+      <p class="offer">82% off</p>
+      <div class="color-options">
+        <div class="color-dot blue"></div>
+        <div class="color-dot gray"></div>
+        <span class="color-more">+3</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" onclick="window.open('https://dhamaka-sale-is-live.pages.dev/', '_blank')" style="cursor: pointer;">
+    <img src="https://i.ibb.co/Z6q7XL9F/Aavante-2-2-800.png" alt="">
+    <div class="tag-bar">60 Hours Playback</div>
+    <div class="product-info">
+      <h3>boAt Aavante 2.2 800</h3>
+      <p class="price">₹229 <span>₹3,999</span></p>
+      <p class="offer">70% off</p>
+      <div class="color-options">
+        <div class="color-dot black"></div>
+        <div class="color-dot gray"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" onclick="window.open('https://dhamaka-sale-is-live.pages.dev/', '_blank')" style="cursor: pointer;">
+    <img src="https://i.ibb.co/v4KzjCwP/Stone-1200-a3556842-465c-4a0d-b6be-1a9aa0eb43c0.png" alt="">
+    <div class="tag-bar">30 Hours Playback</div>
+    <div class="product-info">
+      <h3>boAt Stone 1200 Pro</h3>
+      <p class="price">₹299 <span>₹2,499</span></p>
+      <p class="offer">48% off</p>
+      <div class="color-options">
+        <div class="color-dot blue"></div>
+        <div class="color-dot pink"></div>
+        <span class="color-more">+3</span>
+      </div>
+    </div>
+  </div>
+</div>
+  </section>
+
+     
+
+
+
+
+<img 
+  src="https://i.ibb.co/nMJ8Wt01/Screenshot-2025-12-16-22-02-13-883-com-chrome-dev-edit.jpg"
+  alt="Edge to Edge Image"
+  class="full-image"
+  style="cursor:pointer;"
+  onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'">
+     
+<img 
+  src="https://i.ibb.co/0y2dQB61/Screenshot-2025-11-12-18-02-16-622-com-android-chrome-2.jpg"
+  alt="Edge to Edge Image"
+  class="full-image"
+  style="cursor:pointer;"
+  onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'">
+  
+
+<img 
+  src="https://i.ibb.co/7xvrWNbD/Screenshot-2025-11-12-19-56-41-560-com-android-chrome-edit.jpg"
+  alt="Edge to Edge Image"
+  class="full-image"
+  style="cursor:pointer;"
+  onclick="window.location.href='https://dhamaka-sale-is-live.pages.dev/'">
+     
+
+
+<img src="https://i.ibb.co/ycbyrDMZ/Screenshot-2025-11-12-19-58-19-243-com-android-chrome-edit.jpg"
+     alt="Edge to Edge Image" 
+     class="full-image">  
+
+     
+     
+<div class="product-grid">
+  <div class="product-card" onclick="window.open('https://dhamaka-sale-is-live.pages.dev/', '_blank')" style="cursor: pointer;">
+    <img src="https://i.ibb.co/CKGvXcHf/131-f04f74fd-45d4-4614-85cf-6ccf69c4cf90.jpg" alt="">
+    <div class="tag-bar">35 Hours Playback</div>
+    <div class="product-info">
+      <h3>boAt Airdopes 131</h3>
+      <p class="price">₹219 <span>₹3,498</span></p>
+      <p class="offer">74% off</p>
+      <div class="color-options">
+        <div class="color-dot blue"></div>
+        <div class="color-dot gray"></div>
+        <span class="color-more">+5</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" onclick="window.open('https://dhamaka-sale-is-live.pages.dev/', '_blank')" style="cursor: pointer;">
+    <img src="https://i.ibb.co/BHgfpSsB/141-ls.jpg" alt="">
+    <div class="tag-bar">12 Hours Playback</div>
+    <div class="product-info">
+      <h3>boAt Airdopes 141</h3>
+      <p class="price">₹299 <span>₹4,999</span></p>
+      <p class="offer">68% off</p>
+      <div class="color-options">
+        <div class="color-dot black"></div>
+        <div class="color-dot gray"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" onclick="window.open('https://dhamaka-sale-is-live.pages.dev/', '_blank')" style="cursor: pointer;">
+    <img src="https://i.ibb.co/217mpm28/AD-161-1.png" alt="">
+    <div class="tag-bar">80 Hours Playback</div>
+    <div class="product-info">
+      <h3>boAt Airdopes 616</h3>
+      <p class="price">₹799 <span>₹14,999</span></p>
+      <p class="offer">81% off</p>
+      <div class="color-options">
+        <div class="color-dot black"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" onclick="window.open('https://dhamaka-sale-is-live.pages.dev/', '_blank')" style="cursor: pointer;">
+    <img src="https://i.ibb.co/XwSwR4V/r255pro-55d805bc-f2e1-4861-9533-8eee57081305-1.jpg" alt="">
+    <div class="tag-bar">BT Calling</div>
+    <div class="product-info">
+      <h3>boAt Rockerz 255 Pro+</h3>
+      <p class="price">₹589 <span>₹8,499</span></p>
+      <p class="offer">82% off</p>
+      <div class="color-options">
+        <div class="color-dot blue"></div>
+        <div class="color-dot gray"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" onclick="window.open('https://dhamaka-sale-is-live.pages.dev/', '_blank')" style="cursor: pointer;">
+    <img src="https://i.ibb.co/6cNwvp1r/AD-Alpha-new-colors-2.png" alt="">
+    <div class="tag-bar">60 Hours Playback</div>
+    <div class="product-info">
+      <h3>boAt Airdopes Alpha</h3>
+      <p class="price">₹299 <span>₹3,999</span></p>
+      <p class="offer">70% off</p>
+      <div class="color-options">
+        <div class="color-dot black"></div>
+        <div class="color-dot gray"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-card" onclick="window.open('https://dhamaka-sale-is-live.pages.dev/', '_blank')" style="cursor: pointer;">
+    <img src="https://i.ibb.co/q3sM5nfL/Airdopes-163.jpg" alt="">
+    <div class="tag-bar">30 Hours Playback</div>
+    <div class="product-info">
+      <h3>boAt Airdopes 163</h3>
+      <p class="price">₹1,299 <span>₹2,499</span></p>
+      <p class="offer">48% off</p>
+      <div class="color-options">
+        <div class="color-dot blue"></div>
+        <div class="color-dot pink"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  </section>
+  
+<img src="https://i.ibb.co/9kkdy2xY/Screenshot-2025-11-12-18-27-01-052-com-android-chrome-2.jpg"
+     alt="Edge to Edge Image" 
+     class="full-image">  
+    
+ <img src="https://i.ibb.co/x87L1vHc/1000005309.jpg"
+     alt="Edge to Edge Image" 
+     class="full-image">  
+     
+     
+     
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GIF Slider</title>
+
+<style>
+  body {
+    margin: 0;
+    font-family: Inter, sans-serif;
+    background: #fff;
+    padding: 20px 0;
+  }
+
+  .slider-container {
+    width: 100%;
+    overflow-x: auto;
+    display: flex;
+    gap: 16px;
+    scroll-snap-type: x mandatory;
+  }
+
+  .slider-container::-webkit-scrollbar {
+    display: none;
+  }
+
+  .card {
+    flex: 0 0 260px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    scroll-snap-align: start;
+  }
+
+  .card-img {
+    width: 100%;
+    height: 260px;
+    overflow: hidden;
+    border-radius: 18px 18px 0 0;
+  }
+
+  .card-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .thumb-box {
+    width: 58px;
+    height: 58px;
+    background: #fff;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+    border-radius: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: -30px auto 0;
+    position: relative;
+    z-index: 10;
+  }
+
+  .thumb-box img {
+    width: 38px;
+    height: 38px;
+    object-fit: contain;
+  }
+
+  .card-body {
+    text-align: center;
+    padding: 12px 10px 18px;
+  }
+
+  .title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .price-wrap {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    font-size: 16px;
+  }
+
+  .price { font-weight: 800; }
+  .old { text-decoration: line-through; color: #9a9a9a; }
+  .off { color: #0a8a40; font-weight: 700; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div class="slider-container">
+
+  <!-- CARD 1 -->
+  <div class="card">
+    <div class="card-img">
+      <img src="https://i.ibb.co/s9RMHXfN/quinn-RUxbh-R7-Cvjk-Ntl-FUDxgw9-1-1.gif" alt="">
+    </div>
+    <div class="thumb-box"><img src="https://i.ibb.co/2n4bX0C/thumb-1.png"></div>
+    <div class="card-body">
+      <div class="title">boAt Airdopes 71</div>
+      <div class="price-wrap">
+        <span class="price">₹1,799</span>
+        <span class="old">₹3,990</span>
+        <span class="off">55% off</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD 2 -->
+  <div class="card">
+    <div class="card-img">
+      <img src="https://i.ibb.co/7dBSdtvZ/quinn-Bejc8-URj-U1-NSXdhab-LCm-D-1.gif" alt="">
+    </div>
+    <div class="thumb-box"><img src="https://i.ibb.co/2n4bX0C/thumb-2.png"></div>
+    <div class="card-body">
+      <div class="title">boAt Airdopes 161 Pro</div>
+      <div class="price-wrap">
+        <span class="price">₹1,499</span>
+        <span class="old">₹4,490</span>
+        <span class="off">67% off</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD 3 -->
+  <div class="card">
+    <div class="card-img">
+      <img src="https://i.ibb.co/MxLB4TJr/quinn-Oy-JHanx4-QSd-UN3-OVGTO7-C-1.gif" alt="">
+    </div>
+    <div class="thumb-box"><img src="https://i.ibb.co/2n4bX0C/thumb-3.png"></div>
+    <div class="card-body">
+      <div class="title">boAt Airdopes 171</div>
+      <div class="price-wrap">
+        <span class="price">₹1,999</span>
+        <span class="old">₹4,990</span>
+        <span class="off">60% off</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD 4 -->
+  <div class="card">
+    <div class="card-img">
+      <img src="https://i.ibb.co/HLMGHXVp/quinn-Cps-RId-JWtp-Xy-FN3enwb-Xd-1.gif" alt="">
+    </div>
+    <div class="thumb-box"><img src="https://i.ibb.co/2n4bX0C/thumb-4.png"></div>
+    <div class="card-body">
+      <div class="title">boAt Airdopes 181</div>
+      <div class="price-wrap">
+        <span class="price">₹1,899</span>
+        <span class="old">₹4,590</span>
+        <span class="off">58% off</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD 5 -->
+  <div class="card">
+    <div class="card-img">
+      <img src="https://i.ibb.co/TB5rYk8B/quinn-j1-Tw-OEece-KYOJc7d7m-Aim-2.gif" alt="">
+    </div>
+    <div class="thumb-box"><img src="https://i.ibb.co/2n4bX0C/thumb-4.png"></div>
+    <div class="card-body">
+      <div class="title">boAt Airdopes 181</div>
+      <div class="price-wrap">
+        <span class="price">₹1,899</span>
+        <span class="old">₹4,590</span>
+        <span class="off">58% off</span>
+      </div>
+    </div>
+  </div>
+  
+</div>
+
+<script>
+  const slider = document.querySelector(".slider-container");
+  let isDown = false, startX, scrollLeft;
+
+  slider.addEventListener("mousedown", e => {
+    isDown = true;
+    startX = e.pageX - slider.offsetLeft;
+    scrollLeft = slider.scrollLeft;
+  });
+
+  ["mouseup","mouseleave"].forEach(ev =>
+    slider.addEventListener(ev, () => isDown = false)
+  );
+
+  slider.addEventListener("mousemove", e => {
+    if (!isDown) return;
+    e.preventDefault();
+    slider.scrollLeft = scrollLeft - (e.pageX - slider.offsetLeft - startX) * 1.2;
+  });
+</script>
+
+</body>
+</html>
+
+
+
+
+</div>
+     
+     
+
+  
+  
+   <img src="https://i.ibb.co/x87L1vHc/1000005309.jpg"
+     alt="Edge to Edge Image" 
+     class="full-image">  
+     
+
+  
+<!-- Stories / circular categories -->
+<nav class="stories" aria-label="Categories">
+  <div class="story" role="button" tabindex="0">
+    <div class="ring"><img src="https://i.ibb.co/wrYrZ7X8/quinn-C9js4gd-DIjnqy2c6yl-Pr-R.jpg" alt="Best Sellers"></div>
+    <p>Best Sellers</p>
+  </div>
+  <div class="story">
+    <div class="ring"><img src="https://i.ibb.co/MkyNv9Gy/quinn-azpg4w5gllwfih9ryix484bj.jpg" ></div>
+    <p>New Launches</p>
+  </div>
+  <div class="story">
+    <div class="ring"><img src="https://i.ibb.co/BVFLPg3K/quinn-8x-A3k-N1-Pf-ASNT6s5pqd-ZM.jpg" alt="Limited"></div>
+    <p>Limited Edition</p>
+  </div>
+  <div class="story">
+    <div class="ring"><img src="https://i.ibb.co/4Rjp5S06/quinn-UP9-OBMA36-PRJstiqi-KMLl.jpg" alt="Smartwatch"></div>
+    <p>boAt Smartwatches</p>
+  </div>
+  <div class="story">
+    <div class="ring"><img src="https://i.ibb.co/JwcN97p2/quinn-ZWt-Otu-Fwm-XOz6-SYDfua-E7.jpg" alt="earbuds"></div>
+    <p>boAt Airdops</p>
+  </div>
+</nav>
+
+  <img src="https://i.ibb.co/9mHTf1zV/1000006432.jpg"
+     alt="Edge to Edge Image" 
+     class="full-image">  
+
+     
+     
+<img src="https://i.ibb.co/Z6bNbY3X/1000006435.jpg"
+     alt="Edge to Edge Image" 
+     class="full-image">  
+     
+<img src="https://i.ibb.co/Lh0qKn8H/Screenshot-2025-11-12-18-28-46-865-com-android-chrome.jpg"
+     alt="Edge to Edge Image" 
+     class="full-image">  
+     
+<img src="https://i.ibb.co/FqBRCwKz/Screenshot-2025-11-12-18-32-02-135-com-android-chrome-edit.jpg"
+     alt="Edge to Edge Image" 
+     class="full-image"> 
+     
+<img src="https://i.ibb.co/5xLjQjQB/Screenshot-2025-11-12-18-33-37-057-com-android-chrome-edit.jpg"
+     alt="Edge to Edge Image" 
+     class="full-image"> 
+     
+     
+     
+     <img src="https://i.ibb.co/9mHTf1zV/1000006432.jpg"
+     alt="Edge to Edge Image" 
+     class="full-image">  
+
+     
+     
+  <script>
+    // Simple Auto Slider
+    const slides = document.querySelector('.slides');
+    const dotsContainer = document.getElementById('dots');
+    const totalSlides = slides.children.length;
+    let index = 0;
+
+    for (let i = 0; i < totalSlides; i++) {
+      const dot = document.createElement('div');
+      dot.classList.add('dot');
+      if (i === 0) dot.classList.add('active');
+      dotsContainer.appendChild(dot);
+    }
+
+    const dots = document.querySelectorAll('.dot');
+
+    function changeSlide() {
+      index = (index + 1) % totalSlides;
+      slides.style.transform = `translateX(-${index * 100}%)`;
+      dots.forEach(d => d.classList.remove('active'));
+      dots[index].classList.add('active');
+    }
+
+    setInterval(changeSlide, 3000);
+  </script>
+</body>
 </html>
